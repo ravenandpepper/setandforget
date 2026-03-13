@@ -119,6 +119,25 @@ def assert_confirmation_helper_contracts():
     )
 
 
+def assert_range_breakout_contracts():
+    bearish_breakdown = [
+        {"timestamp": "t1", "open": 1.1820, "high": 1.1900, "low": 1.1780, "close": 1.1880},
+        {"timestamp": "t2", "open": 1.1880, "high": 1.1950, "low": 1.1820, "close": 1.1930},
+        {"timestamp": "t3", "open": 1.1930, "high": 1.1940, "low": 1.1810, "close": 1.1840},
+        {"timestamp": "t4", "open": 1.1840, "high": 1.1910, "low": 1.1800, "close": 1.1890},
+        {"timestamp": "t5", "open": 1.1890, "high": 1.1900, "low": 1.1760, "close": 1.1780},
+        {"timestamp": "t6", "open": 1.1780, "high": 1.1860, "low": 1.1750, "close": 1.1840},
+        {"timestamp": "t7", "open": 1.1840, "high": 1.1850, "low": 1.1700, "close": 1.1720},
+    ]
+    structure = market_structure.analyze_timeframe_structure(bearish_breakdown)
+    assert structure["trend"] == "bearish", (
+        "A close below the latest pivot low should be classified as bearish continuation, not neutral range"
+    )
+    assert structure["structure_state"] == "bearish_ll_lh", (
+        "A range breakdown should map to bearish_ll_lh for higher-timeframe alignment"
+    )
+
+
 def main():
     fixtures = load_json(FIXTURES_FILE)
     input_schema = load_json(INPUT_SCHEMA_FILE)
@@ -128,11 +147,13 @@ def main():
 
     results = []
     assert_confirmation_helper_contracts()
+    assert_range_breakout_contracts()
     for case in fixtures["cases"]:
         results.append(run_case(case, input_schema, feature_schema, decision_schema, skill))
 
-    print(f"PASS {len(results) + 1}/{len(fixtures['cases']) + 1} market structure scenarios")
+    print(f"PASS {len(results) + 2}/{len(fixtures['cases']) + 2} market structure scenarios")
     print("- confirmation_helpers_detect_bos_retest_and_rejection_candles: helpers_ok=True")
+    print("- range_breakout_promotes_directional_trend: helpers_ok=True")
     for result in results:
         print(
             f"- {result['id']}: decision={result['decision']} "

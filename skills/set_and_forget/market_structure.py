@@ -183,6 +183,7 @@ def analyze_timeframe_structure(candles: list):
         previous_high = pivot_highs[-2]["price"]
         latest_low = pivot_lows[-1]["price"]
         previous_low = pivot_lows[-2]["price"]
+        latest_close = candles[-1]["close"]
 
         if latest_high > previous_high and latest_low > previous_low:
             return {
@@ -193,6 +194,22 @@ def analyze_timeframe_structure(candles: list):
             }
 
         if latest_high < previous_high and latest_low < previous_low:
+            return {
+                "trend": "bearish",
+                "structure_state": "bearish_ll_lh",
+                "last_swing_high": latest_high,
+                "last_swing_low": latest_low,
+            }
+
+        if latest_close > latest_high:
+            return {
+                "trend": "bullish",
+                "structure_state": "bullish_hh_hl",
+                "last_swing_high": latest_high,
+                "last_swing_low": latest_low,
+            }
+
+        if latest_close < latest_low:
             return {
                 "trend": "bearish",
                 "structure_state": "bearish_ll_lh",
