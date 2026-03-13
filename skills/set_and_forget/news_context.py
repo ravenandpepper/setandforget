@@ -62,6 +62,15 @@ VOLATILITY_KEYWORDS = [
 ]
 
 
+def env_candidates(base_dir: Path):
+    workspace_root = base_dir.parent.parent
+    return [
+        workspace_root / ".env",
+        base_dir / ".env",
+        Path.home() / ".config" / "openclaw" / "gateway.env",
+    ]
+
+
 def load_env_file(path: Path):
     if not path.exists():
         return
@@ -76,9 +85,31 @@ def load_env_file(path: Path):
 
 
 def load_env_context(base_dir: Path):
-    workspace_root = base_dir.parent.parent
-    for candidate in [workspace_root / ".env", base_dir / ".env"]:
+    seen = set()
+    for candidate in env_candidates(base_dir):
+        candidate = candidate.expanduser()
+        if candidate in seen:
+            continue
+        seen.add(candidate)
         load_env_file(candidate)
+
+
+def describe_api_error(error: Exception):
+    details = {
+        "error_type": type(error).__name__,
+        "error_message": getattr(error, "reason", None) or str(error),
+    }
+
+    if isinstance(error, HTTPError):
+        details["http_status"] = error.code
+        try:
+            error_body = error.read().decode("utf-8", errors="replace").strip()
+        except OSError:
+            error_body = ""
+        if error_body:
+            details["error_body"] = error_body[:500]
+
+    return details
 
 
 def currency_terms_from_pair(pair: str):
@@ -171,19 +202,23 @@ def evaluate_news_context(snapshot: dict, config: dict, base_dir: Path):
         }
 
     load_env_context(base_dir)
+    query = build_query(snapshot["pair"])
     api_key = os.environ.get("BRAVE_SEARCH_API_KEY")
     if not api_key:
         return {
             "enabled": True,
             "used": False,
             "impact": "unavailable_missing_api_key",
+            "provider": "brave_search",
+            "api_call_succeeded": False,
             "reason_codes": [],
             "summary": "",
             "should_wait": False,
             "confidence_penalty": 0,
+            "query": query,
+            "env_sources_checked": [str(path) for path in env_candidates(base_dir)],
         }
 
-    query = build_query(snapshot["pair"])
     try:
         response = perform_brave_search(
             api_key=api_key,
@@ -191,15 +226,19 @@ def evaluate_news_context(snapshot: dict, config: dict, base_dir: Path):
             freshness=config.get("freshness", "pd"),
             count=config.get("result_count", 5),
         )
-    except (HTTPError, URLError, TimeoutError, ValueError, OSError):
+    except (HTTPError, URLError, TimeoutError, ValueError, OSError) as error:
         return {
             "enabled": True,
             "used": False,
             "impact": "unavailable_api_error",
+            "provider": "brave_search",
+            "api_call_succeeded": False,
             "reason_codes": [],
             "summary": "",
             "should_wait": False,
             "confidence_penalty": 0,
+            "query": query,
+            **describe_api_error(error),
         }
 
     results = response.get("web", {}).get("results", [])
@@ -215,6 +254,8 @@ def evaluate_news_context(snapshot: dict, config: dict, base_dir: Path):
         "enabled": True,
         "used": True,
         "impact": impact,
+        "provider": "brave_search",
+        "api_call_succeeded": True,
         "reason_codes": analysis["reason_codes"],
         "summary": analysis["summary"],
         "should_wait": analysis["should_wait"],
