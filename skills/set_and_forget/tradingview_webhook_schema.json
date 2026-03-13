@@ -1,0 +1,204 @@
+{
+  "schema_name": "tradingview_webhook_schema",
+  "version": "1.0",
+  "purpose": "Input contract voor TradingView webhook alerts die worden omgezet naar een Set & Forget snapshot.",
+  "fields": [
+    {
+      "name": "source",
+      "type": "string",
+      "required": true,
+      "allowed_values": ["tradingview"]
+    },
+    {
+      "name": "message_version",
+      "type": "string",
+      "required": true,
+      "allowed_values": ["tv_webhook_v1"]
+    },
+    {
+      "name": "alert_name",
+      "type": "string",
+      "required": false
+    },
+    {
+      "name": "pair",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "execution_timeframe",
+      "type": "string",
+      "required": true,
+      "allowed_values": ["4H"]
+    },
+    {
+      "name": "execution_mode",
+      "type": "string",
+      "required": true,
+      "allowed_values": ["paper", "advisory"]
+    },
+    {
+      "name": "fxalex_confluence_enabled",
+      "type": "boolean",
+      "required": false
+    },
+    {
+      "name": "news_context_enabled",
+      "type": "boolean",
+      "required": false
+    },
+    {
+      "name": "ticker",
+      "type": "string",
+      "required": false
+    },
+    {
+      "name": "exchange",
+      "type": "string",
+      "required": false
+    },
+    {
+      "name": "trigger_time",
+      "type": "string",
+      "required": false
+    },
+    {
+      "name": "weekly_trend",
+      "type": "string",
+      "required": true,
+      "allowed_values": ["bullish", "bearish", "neutral", "unknown"]
+    },
+    {
+      "name": "daily_trend",
+      "type": "string",
+      "required": true,
+      "allowed_values": ["bullish", "bearish", "neutral", "unknown"]
+    },
+    {
+      "name": "h4_pullback_direction",
+      "type": "string",
+      "required": true,
+      "allowed_values": ["bullish", "bearish", "none", "unclear"]
+    },
+    {
+      "name": "h4_pullback_structure",
+      "type": "string",
+      "required": true,
+      "allowed_values": ["hh_hl", "ll_lh", "mixed", "unclear"]
+    },
+    {
+      "name": "h4_reversal_state",
+      "type": "string",
+      "required": true,
+      "allowed_values": ["confirmed_bullish", "confirmed_bearish", "not_confirmed", "unclear"]
+    },
+    {
+      "name": "h4_break_of_structure",
+      "type": "boolean",
+      "required": true
+    },
+    {
+      "name": "first_entry_structure",
+      "type": "string",
+      "required": true,
+      "allowed_values": ["first_hl", "first_lh", "not_present", "unclear"]
+    },
+    {
+      "name": "aoi_zone_status",
+      "type": "string",
+      "required": true,
+      "allowed_values": ["inside_50_61_8", "outside_zone", "unknown"]
+    },
+    {
+      "name": "aoi_confluence_count",
+      "type": "integer",
+      "required": true,
+      "range": [0, 5]
+    },
+    {
+      "name": "aoi_has_sr",
+      "type": "boolean",
+      "required": true
+    },
+    {
+      "name": "aoi_has_order_block",
+      "type": "boolean",
+      "required": true
+    },
+    {
+      "name": "aoi_has_structural_level",
+      "type": "boolean",
+      "required": true
+    },
+    {
+      "name": "confirmation_present",
+      "type": "boolean",
+      "required": true
+    },
+    {
+      "name": "confirmation_type",
+      "type": "string",
+      "required": true,
+      "allowed_values": ["bullish_engulfing", "bearish_engulfing", "hammer", "shooting_star", "bos_retest", "none", "unknown"]
+    },
+    {
+      "name": "stop_loss_basis",
+      "type": "string",
+      "required": true,
+      "allowed_values": ["last_swing", "fib_78_6", "invalid", "unknown"]
+    },
+    {
+      "name": "risk_reward_ratio",
+      "type": "number",
+      "required": true
+    },
+    {
+      "name": "planned_risk_percent",
+      "type": "number",
+      "required": true,
+      "range": [0, 5]
+    },
+    {
+      "name": "open_trades_count",
+      "type": "integer",
+      "required": true,
+      "range": [0, 10]
+    },
+    {
+      "name": "high_impact_news_imminent",
+      "type": "boolean",
+      "required": true
+    },
+    {
+      "name": "session_window",
+      "type": "string",
+      "required": true,
+      "allowed_values": ["london_newyork_overlap", "outside_overlap", "unknown"]
+    },
+    {
+      "name": "set_and_forget_possible",
+      "type": "boolean",
+      "required": true
+    },
+    {
+      "name": "entry_price",
+      "type": "number",
+      "required": false
+    },
+    {
+      "name": "stop_loss_price",
+      "type": "number",
+      "required": false
+    },
+    {
+      "name": "take_profit_price",
+      "type": "number",
+      "required": false
+    },
+    {
+      "name": "notes",
+      "type": "string",
+      "required": false
+    }
+  ]
+}

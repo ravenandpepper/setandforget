@@ -1,0 +1,91 @@
+{
+  "cases": [
+    {
+      "id": "bullish_alert_creates_buy_paper_trade",
+      "alert_payload": {
+        "source": "tradingview",
+        "message_version": "tv_webhook_v1",
+        "alert_name": "tv-bullish-eurusd",
+        "ticker": "PEPPERSTONE:EURUSD",
+        "exchange": "PEPPERSTONE",
+        "timeframe": "240",
+        "trigger_time": "2026-03-13T10:00:00Z",
+        "execution_mode": "paper",
+        "fxalex_confluence_enabled": false,
+        "news_context_enabled": false,
+        "weekly_trend": "bullish",
+        "daily_trend": "bullish",
+        "h4_pullback_direction": "bearish",
+        "h4_pullback_structure": "ll_lh",
+        "h4_reversal_state": "confirmed_bullish",
+        "h4_break_of_structure": true,
+        "first_entry_structure": "first_hl",
+        "aoi_zone_status": "inside_50_61_8",
+        "aoi_confluence_count": 3,
+        "aoi_has_sr": true,
+        "aoi_has_order_block": true,
+        "aoi_has_structural_level": true,
+        "confirmation_present": true,
+        "confirmation_type": "bullish_engulfing",
+        "stop_loss_basis": "last_swing",
+        "risk_reward_ratio": 2.4,
+        "planned_risk_percent": 1.0,
+        "open_trades_count": 1,
+        "high_impact_news_imminent": false,
+        "session_window": "london_newyork_overlap",
+        "set_and_forget_possible": true,
+        "entry_price": 1.0862,
+        "stop_loss_price": 1.0818,
+        "take_profit_price": 1.0968
+      },
+      "expected": {
+        "decision": "BUY",
+        "paper_trade_created": true,
+        "normalized_pair": "EURUSD",
+        "normalized_execution_timeframe": "4H"
+      }
+    },
+    {
+      "id": "misaligned_alert_stays_wait",
+      "alert_payload": {
+        "source": "tradingview",
+        "message_version": "tv_webhook_v1",
+        "alert_name": "tv-misaligned-eurusd",
+        "ticker": "PEPPERSTONE:EURUSD",
+        "exchange": "PEPPERSTONE",
+        "timeframe": "240",
+        "trigger_time": "2026-03-13T14:00:00Z",
+        "execution_mode": "paper",
+        "fxalex_confluence_enabled": false,
+        "news_context_enabled": false,
+        "weekly_trend": "bullish",
+        "daily_trend": "bearish",
+        "h4_pullback_direction": "bearish",
+        "h4_pullback_structure": "ll_lh",
+        "h4_reversal_state": "confirmed_bullish",
+        "h4_break_of_structure": true,
+        "first_entry_structure": "first_hl",
+        "aoi_zone_status": "inside_50_61_8",
+        "aoi_confluence_count": 3,
+        "aoi_has_sr": true,
+        "aoi_has_order_block": true,
+        "aoi_has_structural_level": true,
+        "confirmation_present": true,
+        "confirmation_type": "bullish_engulfing",
+        "stop_loss_basis": "last_swing",
+        "risk_reward_ratio": 2.4,
+        "planned_risk_percent": 1.0,
+        "open_trades_count": 1,
+        "high_impact_news_imminent": false,
+        "session_window": "london_newyork_overlap",
+        "set_and_forget_possible": true
+      },
+      "expected": {
+        "decision": "WAIT",
+        "paper_trade_created": false,
+        "normalized_pair": "EURUSD",
+        "normalized_execution_timeframe": "4H"
+      }
+    }
+  ]
+}

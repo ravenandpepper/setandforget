@@ -3,3 +3,5 @@ __pycache__/
 *.pyc
 
 skills/set_and_forget/paper_trades_log.jsonl
+skills/set_and_forget/automation_decisions_log.jsonl
+skills/set_and_forget/automation_runs/
