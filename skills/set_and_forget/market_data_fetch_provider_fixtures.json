@@ -1,0 +1,64 @@
+{
+  "time_series": {
+    "EUR/USD|1week": {
+      "meta": {
+        "symbol": "EUR/USD",
+        "interval": "1week",
+        "currency_base": "Euro",
+        "currency_quote": "US Dollar",
+        "exchange_timezone": "UTC"
+      },
+      "values": [
+        {"datetime": "2026-01-04", "open": "1.0100", "high": "1.0200", "low": "0.9900", "close": "1.0100"},
+        {"datetime": "2026-01-11", "open": "1.0100", "high": "1.0500", "low": "1.0000", "close": "1.0400"},
+        {"datetime": "2026-01-18", "open": "1.0400", "high": "1.0410", "low": "1.0100", "close": "1.0200"},
+        {"datetime": "2026-01-25", "open": "1.0200", "high": "1.0400", "low": "1.0000", "close": "1.0300"},
+        {"datetime": "2026-02-01", "open": "1.0300", "high": "1.0600", "low": "1.0200", "close": "1.0500"},
+        {"datetime": "2026-02-08", "open": "1.0500", "high": "1.0500", "low": "1.0300", "close": "1.0400"},
+        {"datetime": "2026-02-15", "open": "1.0400", "high": "1.0400", "low": "1.0200", "close": "1.0300"},
+        {"datetime": "2026-02-22", "open": "1.0300", "high": "1.0510", "low": "1.0290", "close": "1.0500"},
+        {"datetime": "2026-03-01", "open": "1.0500", "high": "1.0800", "low": "1.0500", "close": "1.0700"}
+      ]
+    },
+    "EUR/USD|1day": {
+      "meta": {
+        "symbol": "EUR/USD",
+        "interval": "1day",
+        "currency_base": "Euro",
+        "currency_quote": "US Dollar",
+        "exchange_timezone": "UTC"
+      },
+      "values": [
+        {"datetime": "2026-03-01", "open": "1.0700", "high": "1.0740", "low": "1.0600", "close": "1.0720"},
+        {"datetime": "2026-03-02", "open": "1.0720", "high": "1.0820", "low": "1.0650", "close": "1.0800"},
+        {"datetime": "2026-03-03", "open": "1.0800", "high": "1.0810", "low": "1.0680", "close": "1.0700"},
+        {"datetime": "2026-03-04", "open": "1.0700", "high": "1.0790", "low": "1.0660", "close": "1.0750"},
+        {"datetime": "2026-03-05", "open": "1.0750", "high": "1.0860", "low": "1.0720", "close": "1.0840"},
+        {"datetime": "2026-03-06", "open": "1.0840", "high": "1.0850", "low": "1.0760", "close": "1.0780"},
+        {"datetime": "2026-03-09", "open": "1.0780", "high": "1.0810", "low": "1.0740", "close": "1.0760"},
+        {"datetime": "2026-03-10", "open": "1.0760", "high": "1.0810", "low": "1.0750", "close": "1.0800"},
+        {"datetime": "2026-03-11", "open": "1.0800", "high": "1.0900", "low": "1.0790", "close": "1.0880"}
+      ]
+    },
+    "EUR/USD|4h": {
+      "meta": {
+        "symbol": "EUR/USD",
+        "interval": "4h",
+        "currency_base": "Euro",
+        "currency_quote": "US Dollar",
+        "exchange_timezone": "UTC"
+      },
+      "values": [
+        {"datetime": "2026-03-10 00:00:00", "open": "1.1000", "high": "1.1000", "low": "1.0900", "close": "1.0950"},
+        {"datetime": "2026-03-10 04:00:00", "open": "1.0950", "high": "1.0980", "low": "1.0880", "close": "1.0900"},
+        {"datetime": "2026-03-10 08:00:00", "open": "1.0900", "high": "1.0960", "low": "1.0860", "close": "1.0880"},
+        {"datetime": "2026-03-10 12:00:00", "open": "1.0880", "high": "1.0940", "low": "1.0840", "close": "1.0850"},
+        {"datetime": "2026-03-10 16:00:00", "open": "1.0850", "high": "1.0920", "low": "1.0820", "close": "1.0830"},
+        {"datetime": "2026-03-10 20:00:00", "open": "1.0830", "high": "1.0910", "low": "1.0810", "close": "1.0820"},
+        {"datetime": "2026-03-11 00:00:00", "open": "1.0820", "high": "1.0960", "low": "1.0810", "close": "1.0940"},
+        {"datetime": "2026-03-11 04:00:00", "open": "1.0940", "high": "1.0980", "low": "1.0860", "close": "1.0970"},
+        {"datetime": "2026-03-11 08:00:00", "open": "1.0970", "high": "1.1000", "low": "1.0870", "close": "1.0990"}
+      ]
+    }
+  }
+}

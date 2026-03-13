@@ -1,0 +1,13 @@
+{
+  "source": "tradingview",
+  "message_version": "tv_webhook_v1",
+  "payload_kind": "trigger_only",
+  "alert_name": "set-and-forget-eurusd-4h-trigger",
+  "ticker": "PEPPERSTONE:EURUSD",
+  "exchange": "PEPPERSTONE",
+  "trigger_time": "2026-03-13T10:00:00Z",
+  "timeframe": "240",
+  "execution_mode": "paper",
+  "fxalex_confluence_enabled": false,
+  "news_context_enabled": false
+}

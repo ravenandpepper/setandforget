@@ -1,0 +1,101 @@
+//@version=6
+indicator("Set & Forget Candle Bundle Webhook", overlay=false)
+
+weeklyBars = input.int(9, "Weekly bars", minval=7, maxval=12)
+dailyBars = input.int(9, "Daily bars", minval=7, maxval=12)
+h4Bars = input.int(9, "4H bars", minval=7, maxval=12)
+
+executionMode = input.string("paper", "Execution mode", options=["paper", "advisory"])
+fxalexConfluenceEnabled = input.bool(false, "Enable fxalex confluence")
+newsContextEnabled = input.bool(false, "Enable news context")
+
+stopLossBasis = input.string("last_swing", "Stop loss basis", options=["last_swing", "fib_78_6", "invalid", "unknown"])
+riskRewardRatio = input.float(2.4, "Risk reward ratio", minval=0.1, step=0.1)
+plannedRiskPercent = input.float(1.0, "Planned risk %", minval=0.1, maxval=5.0, step=0.1)
+entryPrice = input.float(0.0, "Entry price", step=0.0001)
+stopLossPrice = input.float(0.0, "Stop loss price", step=0.0001)
+takeProfitPrice = input.float(0.0, "Take profit price", step=0.0001)
+
+openTradesCount = input.int(0, "Open trades count", minval=0, maxval=10)
+highImpactNewsImminent = input.bool(false, "High impact news imminent")
+sessionWindow = input.string("london_newyork_overlap", "Session window", options=["london_newyork_overlap", "outside_overlap", "unknown"])
+setAndForgetPossible = input.bool(true, "Set & Forget possible")
+
+jsonBool(value) =>
+    value ? "true" : "false"
+
+jsonNumber(value) =>
+    str.tostring(value)
+
+jsonString(value) =>
+    "\"" + value + "\""
+
+candleJson(tf, barsBack) =>
+    ts = request.security(syminfo.tickerid, tf, time[barsBack], lookahead=barmerge.lookahead_off)
+    o = request.security(syminfo.tickerid, tf, open[barsBack], lookahead=barmerge.lookahead_off)
+    h = request.security(syminfo.tickerid, tf, high[barsBack], lookahead=barmerge.lookahead_off)
+    l = request.security(syminfo.tickerid, tf, low[barsBack], lookahead=barmerge.lookahead_off)
+    c = request.security(syminfo.tickerid, tf, close[barsBack], lookahead=barmerge.lookahead_off)
+    "{" +
+      "\"timestamp\":" + jsonString(str.tostring(ts)) + "," +
+      "\"open\":" + jsonNumber(o) + "," +
+      "\"high\":" + jsonNumber(h) + "," +
+      "\"low\":" + jsonNumber(l) + "," +
+      "\"close\":" + jsonNumber(c) +
+    "}"
+
+buildCandlesJson(tf, candleCount) =>
+    payload = "["
+    for barsBack = candleCount - 1 to 0
+        if barsBack != candleCount - 1
+            payload += ","
+        payload += candleJson(tf, barsBack)
+    payload += "]"
+    payload
+
+buildPayload() =>
+    weeklyJson = buildCandlesJson("W", weeklyBars)
+    dailyJson = buildCandlesJson("D", dailyBars)
+    h4Json = buildCandlesJson("240", h4Bars)
+    "{" +
+      "\"source\":\"tradingview\"," +
+      "\"message_version\":\"tv_webhook_v1\"," +
+      "\"payload_kind\":\"candle_bundle\"," +
+      "\"alert_name\":\"set-and-forget-" + syminfo.ticker + "-4H-candles\"," +
+      "\"ticker\":\"" + syminfo.tickerid + "\"," +
+      "\"exchange\":\"" + syminfo.prefix + "\"," +
+      "\"trigger_time\":\"" + str.tostring(time) + "\"," +
+      "\"execution_timeframe\":\"4H\"," +
+      "\"execution_mode\":" + jsonString(executionMode) + "," +
+      "\"fxalex_confluence_enabled\":" + jsonBool(fxalexConfluenceEnabled) + "," +
+      "\"news_context_enabled\":" + jsonBool(newsContextEnabled) + "," +
+      "\"candles\":{" +
+        "\"weekly\":" + weeklyJson + "," +
+        "\"daily\":" + dailyJson + "," +
+        "\"h4\":" + h4Json +
+      "}," +
+      "\"risk_features\":{" +
+        "\"stop_loss_basis\":" + jsonString(stopLossBasis) + "," +
+        "\"risk_reward_ratio\":" + jsonNumber(riskRewardRatio) + "," +
+        "\"planned_risk_percent\":" + jsonNumber(plannedRiskPercent) + "," +
+        "\"entry_price\":" + jsonNumber(entryPrice) + "," +
+        "\"stop_loss_price\":" + jsonNumber(stopLossPrice) + "," +
+        "\"take_profit_price\":" + jsonNumber(takeProfitPrice) +
+      "}," +
+      "\"operational_flags\":{" +
+        "\"open_trades_count\":" + jsonNumber(openTradesCount) + "," +
+        "\"high_impact_news_imminent\":" + jsonBool(highImpactNewsImminent) + "," +
+        "\"session_window\":" + jsonString(sessionWindow) + "," +
+        "\"set_and_forget_possible\":" + jsonBool(setAndForgetPossible) +
+      "}," +
+      "\"aoi_features\":null," +
+      "\"confirmation_features\":null" +
+    "}"
+
+is4HChart = timeframe.isintraday and timeframe.multiplier == 240
+shouldAlert = is4HChart and barstate.isconfirmed
+
+if shouldAlert
+    alert(buildPayload(), alert.freq_once_per_bar_close)
+
+plot(shouldAlert ? 1 : 0, title="4H candle bundle ready", style=plot.style_columns)

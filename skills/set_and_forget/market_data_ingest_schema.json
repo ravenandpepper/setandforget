@@ -1,0 +1,21 @@
+{
+  "schema_name": "set_and_forget_market_data_ingest_schema",
+  "required_fields": [
+    "pair",
+    "execution_timeframe",
+    "candles",
+    "risk_features",
+    "operational_flags"
+  ],
+  "timeframes": [
+    "weekly",
+    "daily",
+    "h4"
+  ],
+  "supported_timeframe_aliases": {
+    "240": "4H",
+    "4H": "4H",
+    "4HR": "4H",
+    "4HOUR": "4H"
+  }
+}

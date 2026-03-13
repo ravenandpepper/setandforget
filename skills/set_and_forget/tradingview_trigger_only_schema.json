@@ -1,0 +1,72 @@
+{
+  "schema_name": "tradingview_trigger_only_schema",
+  "version": "1.0",
+  "purpose": "Lightweight TradingView trigger contract for server-side candle fetch/prep before Set & Forget market structure processing.",
+  "fields": [
+    {
+      "name": "source",
+      "type": "string",
+      "required": true,
+      "allowed_values": ["tradingview"]
+    },
+    {
+      "name": "message_version",
+      "type": "string",
+      "required": true,
+      "allowed_values": ["tv_webhook_v1"]
+    },
+    {
+      "name": "payload_kind",
+      "type": "string",
+      "required": true,
+      "allowed_values": ["trigger_only"]
+    },
+    {
+      "name": "alert_name",
+      "type": "string",
+      "required": false
+    },
+    {
+      "name": "pair",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "execution_timeframe",
+      "type": "string",
+      "required": true,
+      "allowed_values": ["4H"]
+    },
+    {
+      "name": "execution_mode",
+      "type": "string",
+      "required": true,
+      "allowed_values": ["paper", "advisory"]
+    },
+    {
+      "name": "fxalex_confluence_enabled",
+      "type": "boolean",
+      "required": false
+    },
+    {
+      "name": "news_context_enabled",
+      "type": "boolean",
+      "required": false
+    },
+    {
+      "name": "ticker",
+      "type": "string",
+      "required": false
+    },
+    {
+      "name": "exchange",
+      "type": "string",
+      "required": false
+    },
+    {
+      "name": "trigger_time",
+      "type": "string",
+      "required": true
+    }
+  ]
+}

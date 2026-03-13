@@ -11,6 +11,7 @@ import tradingview_webhook
 
 BASE_DIR = Path(__file__).resolve().parent
 DEFAULT_ROUTE = "/webhooks/tradingview"
+DEFAULT_TRIGGER_ONLY_ROUTE = "/webhooks/tradingview/trigger-only"
 DEFAULT_HEALTH_ROUTE = "/healthz"
 
 
@@ -30,6 +31,7 @@ def load_runtime_assets(
 def build_server_config(
     *,
     route: str,
+    trigger_only_route: str,
     health_route: str,
     paper_trades_log: Path,
     runs_dir: Path,
@@ -38,6 +40,7 @@ def build_server_config(
 ):
     return {
         "route": route,
+        "trigger_only_route": trigger_only_route,
         "health_route": health_route,
         "paper_trades_log": paper_trades_log,
         "runs_dir": runs_dir,
@@ -57,7 +60,7 @@ def decode_json_body(raw_body: bytes):
         raise ValueError("Request body must be valid JSON.") from error
 
 
-def process_webhook_request(raw_body: bytes, config: dict):
+def process_webhook_request(raw_body: bytes, config: dict, payload_kind_override: str | None = None):
     try:
         payload = decode_json_body(raw_body)
     except ValueError as error:
@@ -69,6 +72,19 @@ def process_webhook_request(raw_body: bytes, config: dict):
             },
             "automation": None,
         }, HTTPStatus.BAD_REQUEST
+
+    if not isinstance(payload, dict):
+        return {
+            "status": "invalid_request",
+            "validation": {
+                "ok": False,
+                "errors": ["Request body must decode to a JSON object."],
+            },
+            "automation": None,
+        }, HTTPStatus.BAD_REQUEST
+
+    if payload_kind_override:
+        payload["payload_kind"] = payload_kind_override
 
     result, exit_code = tradingview_webhook.run_tradingview_ingest(
         alert_payload=payload,
@@ -116,11 +132,17 @@ def build_handler(config: dict):
                     "status": "ok",
                     "service": "tradingview_webhook_server",
                     "route": config["route"],
+                    "trigger_only_route": config["trigger_only_route"],
                 },
             )
 
         def do_POST(self):
-            if self.path != config["route"]:
+            payload_kind_override = None
+            if self.path == config["route"]:
+                payload_kind_override = None
+            elif self.path == config["trigger_only_route"]:
+                payload_kind_override = "trigger_only"
+            else:
                 write_json_response(
                     self,
                     HTTPStatus.NOT_FOUND,
@@ -133,7 +155,7 @@ def build_handler(config: dict):
 
             content_length = int(self.headers.get("Content-Length", "0"))
             raw_body = self.rfile.read(content_length)
-            result, status = process_webhook_request(raw_body, config)
+            result, status = process_webhook_request(raw_body, config, payload_kind_override=payload_kind_override)
             write_json_response(self, status, result)
 
         def do_PUT(self):
@@ -163,6 +185,7 @@ def serve(
     host: str,
     port: int,
     route: str,
+    trigger_only_route: str,
     health_route: str,
     webhook_schema_file: Path,
     skill_file: Path,
@@ -178,6 +201,7 @@ def serve(
     )
     config = build_server_config(
         route=route,
+        trigger_only_route=trigger_only_route,
         health_route=health_route,
         paper_trades_log=paper_trades_log,
         runs_dir=runs_dir,
@@ -193,6 +217,7 @@ def main():
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8787)
     parser.add_argument("--route", default=DEFAULT_ROUTE)
+    parser.add_argument("--trigger-only-route", default=DEFAULT_TRIGGER_ONLY_ROUTE)
     parser.add_argument("--health-route", default=DEFAULT_HEALTH_ROUTE)
     parser.add_argument("--webhook-schema-file", type=Path, default=tradingview_webhook.WEBHOOK_SCHEMA_FILE)
     parser.add_argument("--skill-file", type=Path, default=engine.SKILL_FILE)
@@ -206,6 +231,7 @@ def main():
         host=args.host,
         port=args.port,
         route=args.route,
+        trigger_only_route=args.trigger_only_route,
         health_route=args.health_route,
         webhook_schema_file=args.webhook_schema_file,
         skill_file=args.skill_file,
@@ -222,6 +248,7 @@ def main():
                     "host": args.host,
                     "port": args.port,
                     "route": args.route,
+                    "trigger_only_route": args.trigger_only_route,
                     "health_route": args.health_route,
                 },
                 ensure_ascii=False,

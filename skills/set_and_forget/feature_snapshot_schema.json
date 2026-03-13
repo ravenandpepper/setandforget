@@ -1,0 +1,291 @@
+{
+  "schema_name": "set_and_forget_feature_snapshot_schema",
+  "version": "1.0",
+  "purpose": "Objectief feature contract tussen marktdata, Set & Forget rules en OpenClaw LLM orchestration.",
+  "sections": [
+    {
+      "name": "meta",
+      "fields": [
+        {
+          "name": "feature_snapshot_version",
+          "type": "string",
+          "required": true,
+          "allowed_values": ["1.0"]
+        },
+        {
+          "name": "strategy_id",
+          "type": "string",
+          "required": true,
+          "allowed_values": ["set_and_forget"]
+        },
+        {
+          "name": "objective_only",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "name": "pair",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "execution_timeframe",
+          "type": "string",
+          "required": true,
+          "allowed_values": ["4H"]
+        },
+        {
+          "name": "execution_mode",
+          "type": "string",
+          "required": true,
+          "allowed_values": ["paper", "advisory"]
+        },
+        {
+          "name": "source_kind",
+          "type": "string",
+          "required": true,
+          "allowed_values": ["market_data_pipeline", "tradingview_webhook", "manual_fixture", "automation"]
+        },
+        {
+          "name": "generated_at",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "fxalex_confluence_enabled",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "news_context_enabled",
+          "type": "boolean",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "timeframe_features",
+      "sections": [
+        {
+          "name": "weekly",
+          "fields": [
+            {
+              "name": "trend",
+              "type": "string",
+              "required": true,
+              "allowed_values": ["bullish", "bearish", "neutral", "unknown"]
+            },
+            {
+              "name": "structure_state",
+              "type": "string",
+              "required": true,
+              "allowed_values": ["bullish_hh_hl", "bearish_ll_lh", "range", "unclear"]
+            },
+            {
+              "name": "last_swing_high",
+              "type": "number",
+              "required": false
+            },
+            {
+              "name": "last_swing_low",
+              "type": "number",
+              "required": false
+            }
+          ]
+        },
+        {
+          "name": "daily",
+          "fields": [
+            {
+              "name": "trend",
+              "type": "string",
+              "required": true,
+              "allowed_values": ["bullish", "bearish", "neutral", "unknown"]
+            },
+            {
+              "name": "structure_state",
+              "type": "string",
+              "required": true,
+              "allowed_values": ["bullish_hh_hl", "bearish_ll_lh", "range", "unclear"]
+            },
+            {
+              "name": "last_swing_high",
+              "type": "number",
+              "required": false
+            },
+            {
+              "name": "last_swing_low",
+              "type": "number",
+              "required": false
+            }
+          ]
+        },
+        {
+          "name": "h4",
+          "fields": [
+            {
+              "name": "pullback_direction",
+              "type": "string",
+              "required": true,
+              "allowed_values": ["bullish", "bearish", "none", "unclear"]
+            },
+            {
+              "name": "pullback_structure",
+              "type": "string",
+              "required": true,
+              "allowed_values": ["hh_hl", "ll_lh", "mixed", "unclear"]
+            },
+            {
+              "name": "reversal_state",
+              "type": "string",
+              "required": true,
+              "allowed_values": ["confirmed_bullish", "confirmed_bearish", "not_confirmed", "unclear"]
+            },
+            {
+              "name": "break_of_structure",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "name": "first_entry_structure",
+              "type": "string",
+              "required": true,
+              "allowed_values": ["first_hl", "first_lh", "not_present", "unclear"]
+            },
+            {
+              "name": "last_confirmed_high",
+              "type": "number",
+              "required": false
+            },
+            {
+              "name": "last_confirmed_low",
+              "type": "number",
+              "required": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "aoi_features",
+      "fields": [
+        {
+          "name": "zone_status",
+          "type": "string",
+          "required": true,
+          "allowed_values": ["inside_50_61_8", "outside_zone", "unknown"]
+        },
+        {
+          "name": "confluence_count",
+          "type": "integer",
+          "required": true,
+          "range": [0, 5]
+        },
+        {
+          "name": "has_sr",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "name": "has_order_block",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "name": "has_structural_level",
+          "type": "boolean",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "confirmation_features",
+      "fields": [
+        {
+          "name": "present",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": true,
+          "allowed_values": ["bullish_engulfing", "bearish_engulfing", "hammer", "shooting_star", "bos_retest", "none", "unknown"]
+        }
+      ]
+    },
+    {
+      "name": "risk_features",
+      "fields": [
+        {
+          "name": "stop_loss_basis",
+          "type": "string",
+          "required": true,
+          "allowed_values": ["last_swing", "fib_78_6", "invalid", "unknown"]
+        },
+        {
+          "name": "risk_reward_ratio",
+          "type": "number",
+          "required": true
+        },
+        {
+          "name": "planned_risk_percent",
+          "type": "number",
+          "required": true,
+          "range": [0, 5]
+        },
+        {
+          "name": "entry_price",
+          "type": "number",
+          "required": false
+        },
+        {
+          "name": "stop_loss_price",
+          "type": "number",
+          "required": false
+        },
+        {
+          "name": "take_profit_price",
+          "type": "number",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "operational_flags",
+      "fields": [
+        {
+          "name": "open_trades_count",
+          "type": "integer",
+          "required": true,
+          "range": [0, 10]
+        },
+        {
+          "name": "high_impact_news_imminent",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "name": "session_window",
+          "type": "string",
+          "required": true,
+          "allowed_values": ["london_newyork_overlap", "outside_overlap", "unknown"]
+        },
+        {
+          "name": "set_and_forget_possible",
+          "type": "boolean",
+          "required": true
+        }
+      ]
+    }
+  ],
+  "projection_target": "set_and_forget_decision_schema.json",
+  "openclaw_contract": {
+    "primary_engine": "set_and_forget",
+    "objective_only": true,
+    "advisory_layers": {
+      "fxalex": "advisory_only",
+      "news_context": "risk_context_only"
+    }
+  }
+}

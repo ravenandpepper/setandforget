@@ -1,7 +1,7 @@
 {
   "schema_name": "tradingview_webhook_schema",
   "version": "1.0",
-  "purpose": "Input contract voor TradingView webhook alerts die worden omgezet naar een Set & Forget snapshot.",
+  "purpose": "Input contract voor TradingView webhook alerts die ofwel direct naar een Set & Forget snapshot gaan, of via candle bundles naar market structure ingest.",
   "fields": [
     {
       "name": "source",
@@ -19,6 +19,12 @@
       "name": "alert_name",
       "type": "string",
       "required": false
+    },
+    {
+      "name": "payload_kind",
+      "type": "string",
+      "required": false,
+      "allowed_values": ["snapshot", "candle_bundle"]
     },
     {
       "name": "pair",

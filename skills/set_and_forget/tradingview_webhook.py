@@ -1,6 +1,8 @@
 import json
 from pathlib import Path
 
+import market_data_fetch
+import market_data_ingest
 import run_set_and_forget as engine
 import run_structured_automation as automation
 
@@ -40,6 +42,20 @@ SNAPSHOT_FIELDS = [
     "take_profit_price",
     "notes",
 ]
+COMMON_FIELDS = {
+    "source",
+    "message_version",
+    "pair",
+    "execution_timeframe",
+    "execution_mode",
+    "fxalex_confluence_enabled",
+    "news_context_enabled",
+    "ticker",
+    "exchange",
+    "trigger_time",
+    "alert_name",
+    "payload_kind",
+}
 
 
 def load_json(path: Path):
@@ -77,6 +93,7 @@ def canonicalize_alert_payload(alert_payload: dict):
     canonical = dict(alert_payload)
     canonical["source"] = str(alert_payload.get("source", "")).strip().lower()
     canonical["message_version"] = alert_payload.get("message_version", "tv_webhook_v1")
+    canonical["payload_kind"] = str(alert_payload.get("payload_kind", "")).strip().lower() or None
     canonical["pair"] = normalize_pair(
         alert_payload.get("pair")
         or alert_payload.get("symbol")
@@ -93,8 +110,50 @@ def canonicalize_alert_payload(alert_payload: dict):
     return canonical
 
 
+def is_candle_bundle_alert(canonical_alert: dict):
+    payload_kind = canonical_alert.get("payload_kind")
+    if payload_kind == "candle_bundle":
+        return True
+    return (
+        isinstance(canonical_alert.get("candles"), dict)
+        and "risk_features" in canonical_alert
+        and "operational_flags" in canonical_alert
+    )
+
+
+def is_trigger_only_alert(canonical_alert: dict):
+    return canonical_alert.get("payload_kind") == "trigger_only"
+
+
+def validate_common_tradingview_fields(canonical: dict, schema: dict):
+    filtered_payload = {field["name"]: canonical.get(field["name"]) for field in schema["fields"] if field["name"] in COMMON_FIELDS and field["name"] in canonical}
+    filtered_schema = {
+        **schema,
+        "fields": [field for field in schema["fields"] if field["name"] in COMMON_FIELDS],
+    }
+    return engine.validate_snapshot(filtered_payload, filtered_schema)
+
+
 def validate_tradingview_alert(alert_payload: dict, schema: dict):
     canonical = canonicalize_alert_payload(alert_payload)
+    validation_schema = schema
+    if is_trigger_only_alert(canonical):
+        validation_schema = market_data_fetch.load_json(
+            BASE_DIR / "tradingview_trigger_only_schema.json"
+        )
+
+    common_errors = validate_common_tradingview_fields(canonical, validation_schema)
+    if common_errors:
+        return canonical, common_errors
+
+    if is_trigger_only_alert(canonical):
+        return canonical, []
+
+    if is_candle_bundle_alert(canonical):
+        ingest_schema = market_data_ingest.load_json(market_data_ingest.INGEST_SCHEMA_FILE)
+        ingest_payload = build_ingest_payload_from_alert(canonical)
+        return canonical, market_data_ingest.validate_ingest_payload(ingest_payload, ingest_schema)
+
     return canonical, engine.validate_snapshot(canonical, schema)
 
 
@@ -108,6 +167,23 @@ def build_snapshot_from_alert(alert_payload: dict):
     if "notes" not in snapshot:
         snapshot["notes"] = build_snapshot_note(canonical)
     return snapshot
+
+
+def build_ingest_payload_from_alert(canonical_alert: dict):
+    return {
+        "pair": canonical_alert.get("pair"),
+        "execution_timeframe": canonical_alert.get("execution_timeframe"),
+        "execution_mode": canonical_alert.get("execution_mode", "paper"),
+        "source_kind": "market_data_pipeline",
+        "generated_at": canonical_alert.get("trigger_time"),
+        "fxalex_confluence_enabled": canonical_alert.get("fxalex_confluence_enabled", False),
+        "news_context_enabled": canonical_alert.get("news_context_enabled", False),
+        "candles": canonical_alert["candles"],
+        "risk_features": canonical_alert["risk_features"],
+        "operational_flags": canonical_alert["operational_flags"],
+        "aoi_features": canonical_alert.get("aoi_features"),
+        "confirmation_features": canonical_alert.get("confirmation_features"),
+    }
 
 
 def build_snapshot_note(canonical_alert: dict):
@@ -154,6 +230,80 @@ def run_tradingview_ingest(
             "automation": None,
         }, 1
 
+    if is_trigger_only_alert(canonical_alert):
+        fetch_result, fetch_exit_code = market_data_fetch.run_trigger_fetch_prep(canonical_alert)
+        if fetch_exit_code != 0:
+            return {
+                "status": fetch_result["status"],
+                "alert_context": build_alert_context(canonical_alert),
+                "validation": {
+                    "ok": False,
+                    "errors": fetch_result.get("errors", []),
+                },
+                "snapshot": None,
+                "market_input": None,
+                "market_data_fetch": fetch_result,
+                "automation": None,
+            }, 1
+
+        ingest_schema = market_data_ingest.load_json(market_data_ingest.INGEST_SCHEMA_FILE)
+        feature_schema = market_data_ingest.load_json(BASE_DIR / "feature_snapshot_schema.json")
+        input_schema = market_data_ingest.load_json(BASE_DIR / "market_structure_input_schema.json")
+        ingest_result, exit_code = market_data_ingest.run_market_data_ingest(
+            ingest_payload=fetch_result["ingest_payload"],
+            ingest_schema=ingest_schema,
+            input_schema=input_schema,
+            feature_schema=feature_schema,
+            skill=skill,
+            decision_schema=decision_schema,
+            runs_dir=runs_dir,
+            paper_trades_log=paper_trades_log,
+            decision_log=decision_log,
+            trigger="tradingview_trigger_only",
+        )
+        return {
+            "status": "processed" if exit_code == 0 else ingest_result["status"],
+            "alert_context": build_alert_context(canonical_alert),
+            "validation": {
+                "ok": exit_code == 0,
+                "errors": ingest_result.get("errors", []),
+            },
+            "snapshot": None,
+            "market_input": ingest_result.get("market_input"),
+            "market_data_fetch": fetch_result,
+            "automation": ingest_result.get("decision_run", {}).get("automation") if ingest_result.get("decision_run") else None,
+        }, exit_code
+
+    if is_candle_bundle_alert(canonical_alert):
+        ingest_schema = market_data_ingest.load_json(market_data_ingest.INGEST_SCHEMA_FILE)
+        feature_schema = market_data_ingest.load_json(BASE_DIR / "feature_snapshot_schema.json")
+        input_schema = market_data_ingest.load_json(BASE_DIR / "market_structure_input_schema.json")
+        ingest_payload = build_ingest_payload_from_alert(canonical_alert)
+        ingest_result, exit_code = market_data_ingest.run_market_data_ingest(
+            ingest_payload=ingest_payload,
+            ingest_schema=ingest_schema,
+            input_schema=input_schema,
+            feature_schema=feature_schema,
+            skill=skill,
+            decision_schema=decision_schema,
+            runs_dir=runs_dir,
+            paper_trades_log=paper_trades_log,
+            decision_log=decision_log,
+            trigger="tradingview_webhook",
+        )
+        return {
+            "status": "processed" if exit_code == 0 else ingest_result["status"],
+            "alert_context": build_alert_context(canonical_alert),
+            "validation": {
+                "ok": exit_code == 0,
+                "errors": ingest_result.get("errors", []),
+            },
+            "snapshot": None,
+            "market_input": ingest_result.get("market_input"),
+            "market_data_fetch": None,
+            "automation": ingest_result.get("decision_run", {}).get("automation") if ingest_result.get("decision_run") else None,
+        }, exit_code
+
     snapshot = build_snapshot_from_alert(canonical_alert)
     snapshot_errors = engine.validate_snapshot(snapshot, decision_schema)
     if snapshot_errors:
@@ -165,6 +315,8 @@ def run_tradingview_ingest(
                 "errors": snapshot_errors,
             },
             "snapshot": snapshot,
+            "market_input": None,
+            "market_data_fetch": None,
             "automation": None,
         }, 1
 
@@ -187,5 +339,7 @@ def run_tradingview_ingest(
             "errors": [],
         },
         "snapshot": snapshot,
+        "market_input": None,
+        "market_data_fetch": None,
         "automation": automation_result,
     }, exit_code

@@ -1,0 +1,34 @@
+{
+  "source": "tradingview",
+  "message_version": "tv_webhook_v1",
+  "payload_kind": "candle_bundle",
+  "alert_name": "set-and-forget-{{ticker}}-{{interval}}",
+  "ticker": "{{ticker}}",
+  "exchange": "{{exchange}}",
+  "trigger_time": "{{time}}",
+  "execution_timeframe": "{{interval}}",
+  "execution_mode": "paper",
+  "fxalex_confluence_enabled": false,
+  "news_context_enabled": false,
+  "candles": {
+    "weekly": __WEEKLY_CANDLES_JSON__,
+    "daily": __DAILY_CANDLES_JSON__,
+    "h4": __H4_CANDLES_JSON__
+  },
+  "risk_features": {
+    "stop_loss_basis": "__STOP_LOSS_BASIS__",
+    "risk_reward_ratio": __RISK_REWARD_RATIO__,
+    "planned_risk_percent": __PLANNED_RISK_PERCENT__,
+    "entry_price": __ENTRY_PRICE__,
+    "stop_loss_price": __STOP_LOSS_PRICE__,
+    "take_profit_price": __TAKE_PROFIT_PRICE__
+  },
+  "operational_flags": {
+    "open_trades_count": __OPEN_TRADES_COUNT__,
+    "high_impact_news_imminent": __HIGH_IMPACT_NEWS_IMMINENT__,
+    "session_window": "__SESSION_WINDOW__",
+    "set_and_forget_possible": __SET_AND_FORGET_POSSIBLE__
+  },
+  "aoi_features": __AOI_FEATURES_JSON_OR_NULL__,
+  "confirmation_features": __CONFIRMATION_FEATURES_JSON_OR_NULL__
+}

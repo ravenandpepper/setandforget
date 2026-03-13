@@ -1,0 +1,216 @@
+{
+  "schema_name": "set_and_forget_market_structure_input_schema",
+  "version": "1.0",
+  "purpose": "Objectief input contract voor candle-based market structure extractie richting feature snapshot.",
+  "sections": [
+    {
+      "name": "meta",
+      "fields": [
+        {
+          "name": "pair",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "execution_timeframe",
+          "type": "string",
+          "required": true,
+          "allowed_values": ["4H"]
+        },
+        {
+          "name": "execution_mode",
+          "type": "string",
+          "required": true,
+          "allowed_values": ["paper", "advisory"]
+        },
+        {
+          "name": "source_kind",
+          "type": "string",
+          "required": true,
+          "allowed_values": ["market_data_pipeline", "manual_fixture", "automation"]
+        },
+        {
+          "name": "generated_at",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "fxalex_confluence_enabled",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "news_context_enabled",
+          "type": "boolean",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "candles",
+      "notes": "Elke timeframe bevat een array candles met velden timestamp, open, high, low, close.",
+      "sections": [
+        {
+          "name": "weekly",
+          "fields": [
+            {
+              "name": "candles",
+              "type": "array",
+              "required": true
+            }
+          ]
+        },
+        {
+          "name": "daily",
+          "fields": [
+            {
+              "name": "candles",
+              "type": "array",
+              "required": true
+            }
+          ]
+        },
+        {
+          "name": "h4",
+          "fields": [
+            {
+              "name": "candles",
+              "type": "array",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "objective_context",
+      "sections": [
+        {
+          "name": "aoi_features",
+          "required": false,
+          "fields": [
+            {
+              "name": "zone_status",
+              "type": "string",
+              "required": false,
+              "allowed_values": ["inside_50_61_8", "outside_zone", "unknown"]
+            },
+            {
+              "name": "confluence_count",
+              "type": "integer",
+              "required": false,
+              "range": [0, 5]
+            },
+            {
+              "name": "has_sr",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "has_order_block",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "has_structural_level",
+              "type": "boolean",
+              "required": false
+            }
+          ]
+        },
+        {
+          "name": "confirmation_features",
+          "required": false,
+          "fields": [
+            {
+              "name": "present",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "type",
+              "type": "string",
+              "required": false,
+              "allowed_values": ["bullish_engulfing", "bearish_engulfing", "hammer", "shooting_star", "bos_retest", "none", "unknown"]
+            }
+          ]
+        },
+        {
+          "name": "risk_features",
+          "fields": [
+            {
+              "name": "stop_loss_basis",
+              "type": "string",
+              "required": true,
+              "allowed_values": ["last_swing", "fib_78_6", "invalid", "unknown"]
+            },
+            {
+              "name": "risk_reward_ratio",
+              "type": "number",
+              "required": true
+            },
+            {
+              "name": "planned_risk_percent",
+              "type": "number",
+              "required": true,
+              "range": [0, 5]
+            },
+            {
+              "name": "entry_price",
+              "type": "number",
+              "required": false
+            },
+            {
+              "name": "stop_loss_price",
+              "type": "number",
+              "required": false
+            },
+            {
+              "name": "take_profit_price",
+              "type": "number",
+              "required": false
+            }
+          ]
+        },
+        {
+          "name": "operational_flags",
+          "fields": [
+            {
+              "name": "open_trades_count",
+              "type": "integer",
+              "required": true,
+              "range": [0, 10]
+            },
+            {
+              "name": "high_impact_news_imminent",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "name": "session_window",
+              "type": "string",
+              "required": true,
+              "allowed_values": ["london_newyork_overlap", "outside_overlap", "unknown"]
+            },
+            {
+              "name": "set_and_forget_possible",
+              "type": "boolean",
+              "required": true
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "candle_item_schema": {
+    "required_fields": ["timestamp", "open", "high", "low", "close"],
+    "types": {
+      "timestamp": "string",
+      "open": "number",
+      "high": "number",
+      "low": "number",
+      "close": "number"
+    }
+  },
+  "projection_target": "feature_snapshot_schema.json"
+}

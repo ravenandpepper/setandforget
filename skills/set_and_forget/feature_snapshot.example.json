@@ -1,0 +1,62 @@
+{
+  "meta": {
+    "feature_snapshot_version": "1.0",
+    "strategy_id": "set_and_forget",
+    "objective_only": true,
+    "pair": "EURUSD",
+    "execution_timeframe": "4H",
+    "execution_mode": "paper",
+    "source_kind": "manual_fixture",
+    "generated_at": "2026-03-13T13:40:00Z",
+    "fxalex_confluence_enabled": false,
+    "news_context_enabled": false
+  },
+  "timeframe_features": {
+    "weekly": {
+      "trend": "bullish",
+      "structure_state": "bullish_hh_hl",
+      "last_swing_high": 1.0934,
+      "last_swing_low": 1.0512
+    },
+    "daily": {
+      "trend": "bullish",
+      "structure_state": "bullish_hh_hl",
+      "last_swing_high": 1.0901,
+      "last_swing_low": 1.0728
+    },
+    "h4": {
+      "pullback_direction": "bearish",
+      "pullback_structure": "ll_lh",
+      "reversal_state": "confirmed_bullish",
+      "break_of_structure": true,
+      "first_entry_structure": "first_hl",
+      "last_confirmed_high": 1.0876,
+      "last_confirmed_low": 1.0818
+    }
+  },
+  "aoi_features": {
+    "zone_status": "inside_50_61_8",
+    "confluence_count": 3,
+    "has_sr": true,
+    "has_order_block": true,
+    "has_structural_level": true
+  },
+  "confirmation_features": {
+    "present": true,
+    "type": "bullish_engulfing"
+  },
+  "risk_features": {
+    "stop_loss_basis": "last_swing",
+    "risk_reward_ratio": 2.4,
+    "planned_risk_percent": 1.0,
+    "entry_price": 1.0862,
+    "stop_loss_price": 1.0818,
+    "take_profit_price": 1.0968
+  },
+  "operational_flags": {
+    "open_trades_count": 1,
+    "high_impact_news_imminent": false,
+    "session_window": "london_newyork_overlap",
+    "set_and_forget_possible": true
+  }
+}

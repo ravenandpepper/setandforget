@@ -1,0 +1,163 @@
+{
+  "cases": [
+    {
+      "id": "bullish_candles_build_buy_ready_feature_snapshot",
+      "market_input": {
+        "meta": {
+          "pair": "EURUSD",
+          "execution_timeframe": "4H",
+          "execution_mode": "paper",
+          "source_kind": "manual_fixture",
+          "generated_at": "2026-03-13T14:10:00Z",
+          "fxalex_confluence_enabled": false,
+          "news_context_enabled": false
+        },
+        "candles": {
+          "weekly": {
+            "candles": [
+              {"timestamp": "2026-01-04T00:00:00Z", "open": 1.0100, "high": 1.0200, "low": 0.9900, "close": 1.0100},
+              {"timestamp": "2026-01-11T00:00:00Z", "open": 1.0100, "high": 1.0500, "low": 1.0000, "close": 1.0400},
+              {"timestamp": "2026-01-18T00:00:00Z", "open": 1.0400, "high": 1.0410, "low": 1.0100, "close": 1.0200},
+              {"timestamp": "2026-01-25T00:00:00Z", "open": 1.0200, "high": 1.0400, "low": 1.0000, "close": 1.0300},
+              {"timestamp": "2026-02-01T00:00:00Z", "open": 1.0300, "high": 1.0600, "low": 1.0200, "close": 1.0500},
+              {"timestamp": "2026-02-08T00:00:00Z", "open": 1.0500, "high": 1.0500, "low": 1.0300, "close": 1.0400},
+              {"timestamp": "2026-02-15T00:00:00Z", "open": 1.0400, "high": 1.0400, "low": 1.0200, "close": 1.0300},
+              {"timestamp": "2026-02-22T00:00:00Z", "open": 1.0300, "high": 1.0510, "low": 1.0290, "close": 1.0500},
+              {"timestamp": "2026-03-01T00:00:00Z", "open": 1.0500, "high": 1.0800, "low": 1.0500, "close": 1.0700}
+            ]
+          },
+          "daily": {
+            "candles": [
+              {"timestamp": "2026-03-01T00:00:00Z", "open": 1.0700, "high": 1.0740, "low": 1.0600, "close": 1.0720},
+              {"timestamp": "2026-03-02T00:00:00Z", "open": 1.0720, "high": 1.0820, "low": 1.0650, "close": 1.0800},
+              {"timestamp": "2026-03-03T00:00:00Z", "open": 1.0800, "high": 1.0810, "low": 1.0680, "close": 1.0700},
+              {"timestamp": "2026-03-04T00:00:00Z", "open": 1.0700, "high": 1.0790, "low": 1.0660, "close": 1.0750},
+              {"timestamp": "2026-03-05T00:00:00Z", "open": 1.0750, "high": 1.0860, "low": 1.0720, "close": 1.0840},
+              {"timestamp": "2026-03-06T00:00:00Z", "open": 1.0840, "high": 1.0850, "low": 1.0760, "close": 1.0780},
+              {"timestamp": "2026-03-09T00:00:00Z", "open": 1.0780, "high": 1.0810, "low": 1.0740, "close": 1.0760},
+              {"timestamp": "2026-03-10T00:00:00Z", "open": 1.0760, "high": 1.0810, "low": 1.0750, "close": 1.0800},
+              {"timestamp": "2026-03-11T00:00:00Z", "open": 1.0800, "high": 1.0900, "low": 1.0790, "close": 1.0880}
+            ]
+          },
+          "h4": {
+            "candles": [
+              {"timestamp": "2026-03-10T00:00:00Z", "open": 1.1000, "high": 1.1000, "low": 1.0900, "close": 1.0950},
+              {"timestamp": "2026-03-10T04:00:00Z", "open": 1.0950, "high": 1.0980, "low": 1.0880, "close": 1.0900},
+              {"timestamp": "2026-03-10T08:00:00Z", "open": 1.0900, "high": 1.0960, "low": 1.0860, "close": 1.0880},
+              {"timestamp": "2026-03-10T12:00:00Z", "open": 1.0880, "high": 1.0940, "low": 1.0840, "close": 1.0850},
+              {"timestamp": "2026-03-10T16:00:00Z", "open": 1.0850, "high": 1.0920, "low": 1.0820, "close": 1.0830},
+              {"timestamp": "2026-03-10T20:00:00Z", "open": 1.0830, "high": 1.0910, "low": 1.0810, "close": 1.0820},
+              {"timestamp": "2026-03-11T00:00:00Z", "open": 1.0820, "high": 1.0960, "low": 1.0810, "close": 1.0940},
+              {"timestamp": "2026-03-11T04:00:00Z", "open": 1.0940, "high": 1.0980, "low": 1.0860, "close": 1.0970},
+              {"timestamp": "2026-03-11T08:00:00Z", "open": 1.0970, "high": 1.1000, "low": 1.0870, "close": 1.0990}
+            ]
+          }
+        },
+        "objective_context": {
+          "risk_features": {
+            "stop_loss_basis": "last_swing",
+            "risk_reward_ratio": 2.4,
+            "planned_risk_percent": 1.0,
+            "entry_price": 1.0862,
+            "stop_loss_price": 1.0818,
+            "take_profit_price": 1.0968
+          },
+          "operational_flags": {
+            "open_trades_count": 1,
+            "high_impact_news_imminent": false,
+            "session_window": "london_newyork_overlap",
+            "set_and_forget_possible": true
+          }
+        }
+      },
+      "expected": {
+        "weekly_trend": "bullish",
+        "daily_trend": "bullish",
+        "aoi_zone_status": "inside_50_61_8",
+        "aoi_confluence_count": 3,
+        "confirmation_type": "bos_retest",
+        "h4_pullback_structure": "ll_lh",
+        "h4_reversal_state": "confirmed_bullish",
+        "first_entry_structure": "first_hl",
+        "decision": "BUY"
+      }
+    },
+    {
+      "id": "misaligned_higher_timeframes_build_wait_snapshot",
+      "market_input": {
+        "meta": {
+          "pair": "EURUSD",
+          "execution_timeframe": "4H",
+          "execution_mode": "paper",
+          "source_kind": "manual_fixture",
+          "generated_at": "2026-03-13T14:15:00Z",
+          "fxalex_confluence_enabled": false,
+          "news_context_enabled": false
+        },
+        "candles": {
+          "weekly": {
+            "candles": [
+              {"timestamp": "2026-01-04T00:00:00Z", "open": 1.0100, "high": 1.0200, "low": 0.9900, "close": 1.0100},
+              {"timestamp": "2026-01-11T00:00:00Z", "open": 1.0100, "high": 1.0500, "low": 1.0000, "close": 1.0400},
+              {"timestamp": "2026-01-18T00:00:00Z", "open": 1.0400, "high": 1.0410, "low": 1.0100, "close": 1.0200},
+              {"timestamp": "2026-01-25T00:00:00Z", "open": 1.0200, "high": 1.0400, "low": 1.0000, "close": 1.0300},
+              {"timestamp": "2026-02-01T00:00:00Z", "open": 1.0300, "high": 1.0600, "low": 1.0200, "close": 1.0500},
+              {"timestamp": "2026-02-08T00:00:00Z", "open": 1.0500, "high": 1.0500, "low": 1.0300, "close": 1.0400},
+              {"timestamp": "2026-02-15T00:00:00Z", "open": 1.0400, "high": 1.0400, "low": 1.0200, "close": 1.0300},
+              {"timestamp": "2026-02-22T00:00:00Z", "open": 1.0300, "high": 1.0510, "low": 1.0290, "close": 1.0500},
+              {"timestamp": "2026-03-01T00:00:00Z", "open": 1.0500, "high": 1.0800, "low": 1.0500, "close": 1.0700}
+            ]
+          },
+          "daily": {
+            "candles": [
+              {"timestamp": "2026-03-01T00:00:00Z", "open": 1.0900, "high": 1.1000, "low": 1.0820, "close": 1.0840},
+              {"timestamp": "2026-03-02T00:00:00Z", "open": 1.0840, "high": 1.0960, "low": 1.0780, "close": 1.0800},
+              {"timestamp": "2026-03-03T00:00:00Z", "open": 1.0800, "high": 1.0880, "low": 1.0740, "close": 1.0760},
+              {"timestamp": "2026-03-04T00:00:00Z", "open": 1.0760, "high": 1.0840, "low": 1.0700, "close": 1.0720},
+              {"timestamp": "2026-03-05T00:00:00Z", "open": 1.0720, "high": 1.0800, "low": 1.0680, "close": 1.0700},
+              {"timestamp": "2026-03-06T00:00:00Z", "open": 1.0700, "high": 1.0740, "low": 1.0640, "close": 1.0660},
+              {"timestamp": "2026-03-09T00:00:00Z", "open": 1.0660, "high": 1.0720, "low": 1.0600, "close": 1.0620},
+              {"timestamp": "2026-03-10T00:00:00Z", "open": 1.0620, "high": 1.0680, "low": 1.0580, "close": 1.0600},
+              {"timestamp": "2026-03-11T00:00:00Z", "open": 1.0600, "high": 1.0640, "low": 1.0540, "close": 1.0560}
+            ]
+          },
+          "h4": {
+            "candles": [
+              {"timestamp": "2026-03-10T00:00:00Z", "open": 1.0620, "high": 1.0700, "low": 1.0580, "close": 1.0600},
+              {"timestamp": "2026-03-10T04:00:00Z", "open": 1.0600, "high": 1.0680, "low": 1.0560, "close": 1.0580},
+              {"timestamp": "2026-03-10T08:00:00Z", "open": 1.0580, "high": 1.0640, "low": 1.0520, "close": 1.0540},
+              {"timestamp": "2026-03-10T12:00:00Z", "open": 1.0540, "high": 1.0620, "low": 1.0500, "close": 1.0520},
+              {"timestamp": "2026-03-10T16:00:00Z", "open": 1.0520, "high": 1.0580, "low": 1.0480, "close": 1.0500},
+              {"timestamp": "2026-03-10T20:00:00Z", "open": 1.0500, "high": 1.0560, "low": 1.0460, "close": 1.0480},
+              {"timestamp": "2026-03-11T00:00:00Z", "open": 1.0480, "high": 1.0540, "low": 1.0440, "close": 1.0460},
+              {"timestamp": "2026-03-11T04:00:00Z", "open": 1.0460, "high": 1.0520, "low": 1.0420, "close": 1.0440},
+              {"timestamp": "2026-03-11T08:00:00Z", "open": 1.0440, "high": 1.0500, "low": 1.0400, "close": 1.0420}
+            ]
+          }
+        },
+        "objective_context": {
+          "risk_features": {
+            "stop_loss_basis": "last_swing",
+            "risk_reward_ratio": 2.4,
+            "planned_risk_percent": 1.0,
+            "entry_price": 1.0562,
+            "stop_loss_price": 1.0518,
+            "take_profit_price": 1.0668
+          },
+          "operational_flags": {
+            "open_trades_count": 1,
+            "high_impact_news_imminent": false,
+            "session_window": "london_newyork_overlap",
+            "set_and_forget_possible": true
+          }
+        }
+      },
+      "expected": {
+        "weekly_trend": "bullish",
+        "daily_trend": "bearish",
+        "confirmation_type": "shooting_star",
+        "decision": "WAIT"
+      }
+    }
+  ]
+}
