@@ -1,0 +1,68 @@
+upstream setandforget_tradingview_webhook {
+    server 127.0.0.1:8787;
+    keepalive 8;
+}
+
+server {
+    listen 80;
+    server_name 38.242.214.188 vmi3047586.contaboserver.net;
+
+    client_max_body_size 64k;
+
+    location = /healthz {
+        allow 127.0.0.1;
+        deny all;
+
+        proxy_pass http://setandforget_tradingview_webhook/healthz;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location = /webhooks/tradingview {
+        return 404;
+    }
+
+    location = /webhooks/tradingview/trigger-only {
+        return 404;
+    }
+
+    location = /webhooks/tradingview/REPLACE_WITH_LONG_RANDOM_TOKEN {
+        limit_except POST {
+            deny all;
+        }
+
+        allow 52.89.214.238;
+        allow 34.212.75.30;
+        allow 54.218.53.128;
+        allow 52.32.178.7;
+        deny all;
+
+        proxy_pass http://setandforget_tradingview_webhook/webhooks/tradingview;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location = /webhooks/tradingview/REPLACE_WITH_LONG_RANDOM_TOKEN/trigger-only {
+        limit_except POST {
+            deny all;
+        }
+
+        allow 52.89.214.238;
+        allow 34.212.75.30;
+        allow 54.218.53.128;
+        allow 52.32.178.7;
+        deny all;
+
+        proxy_pass http://setandforget_tradingview_webhook/webhooks/tradingview/trigger-only;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}

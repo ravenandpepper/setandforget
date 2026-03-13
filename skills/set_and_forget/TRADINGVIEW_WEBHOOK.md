@@ -16,9 +16,37 @@ Standaard luistert de server op:
 - host: `127.0.0.1`
 - port: `8787`
 - webhook route: `/webhooks/tradingview`
+- trigger-only route: `/webhooks/tradingview/trigger-only`
 - health route: `/healthz`
 
 Voor een extern bereikbare VPS-setup hoort hier later nog een reverse proxy of service-laag voor poort `80` of `443` bovenop te komen.
+
+## Cybersecure VPS route
+
+De kleinste veilige VPS-opzet is:
+
+1. laat de bestaande Python server alleen op `127.0.0.1:8787` draaien
+2. publiceer alleen een geheime publieke route via een reverse proxy op poort `80` of `443`
+3. allowlist in die proxy alleen de TradingView webhook IP's
+4. laat `/healthz` alleen lokaal bereikbaar blijven
+
+Versieerde deploy artefacten:
+
+- systemd user unit: [deploy/systemd/setandforget-tradingview-webhook.service](/Users/jeroenderaaf/Sites/setandforget/deploy/systemd/setandforget-tradingview-webhook.service)
+- VPS install script: [scripts/install_tradingview_webhook_service_vps.sh](/Users/jeroenderaaf/Sites/setandforget/scripts/install_tradingview_webhook_service_vps.sh)
+- nginx voorbeeldconfig: [deploy/nginx/setandforget-tradingview-webhook.conf.example](/Users/jeroenderaaf/Sites/setandforget/deploy/nginx/setandforget-tradingview-webhook.conf.example)
+
+De nginx voorbeeldconfig gebruikt bewust:
+
+- een localhost upstream naar `127.0.0.1:8787`
+- `POST`-only webhook locations
+- een geheim padsegment `REPLACE_WITH_LONG_RANDOM_TOKEN`
+- allowlisting voor de TradingView source IP's
+- een niet-publieke health route
+
+Na het vervangen van `REPLACE_WITH_LONG_RANDOM_TOKEN` wordt de publieke trigger-only URL:
+
+`http://38.242.214.188/webhooks/tradingview/REPLACE_WITH_LONG_RANDOM_TOKEN/trigger-only`
 
 ## Testen met voorbeeldpayload
 
