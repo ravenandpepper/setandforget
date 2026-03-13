@@ -1,0 +1,20 @@
+{
+  "pair": "GBPUSD",
+  "timeframe": "4H",
+  "mode": "normal",
+  "bias": "bullish",
+  "market_structure_state": "bullish_confirmed",
+  "support_resistance_context": "resistance_flip_to_support",
+  "ema_context": "bullish_support",
+  "liquidity_context": "sweep_present",
+  "confirmation_present": true,
+  "setup_quality": 8,
+  "entry_price": 1.2740,
+  "stop_loss_price": 1.2710,
+  "take_profit_price": 1.2805,
+  "risk_reward_ratio": 2.16,
+  "planned_risk_percent": 1.0,
+  "set_and_forget_possible": true,
+  "trader_condition": "focused",
+  "notes": "Live snapshot test voor bullish setup."
+}

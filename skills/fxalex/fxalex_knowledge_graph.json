@@ -1,0 +1,164 @@
+{
+  "graph_name": "fxalex_knowledge_graph",
+  "version": "1.0",
+  "source": "fxalex YouTube transcript distillation",
+  "notes": [
+    "Gebaseerd op transcript-claims, dus niet 100% schoon of definitief.",
+    "Knowledge graph is bedoeld als reasoning-laag voor OpenClaw.",
+    "Conflicten tussen daytrading en swingtrading moeten later nog explicieter worden gescheiden."
+  ],
+  "nodes": [
+    { "id": "market_structure", "type": "concept" },
+    { "id": "bias", "type": "concept" },
+    { "id": "support_resistance", "type": "concept" },
+    { "id": "ema_context", "type": "concept" },
+    { "id": "liquidity", "type": "concept" },
+    { "id": "confirmation", "type": "concept" },
+    { "id": "trade_setup_quality", "type": "concept" },
+    { "id": "entry_signal", "type": "concept" },
+    { "id": "risk_reward", "type": "concept" },
+    { "id": "stop_loss", "type": "concept" },
+    { "id": "take_profit", "type": "concept" },
+    { "id": "position_risk", "type": "concept" },
+    { "id": "set_and_forget", "type": "concept" },
+    { "id": "do_not_force_trade", "type": "principle" },
+    { "id": "wait_for_good_setup", "type": "principle" },
+    { "id": "flip_mode", "type": "mode" },
+    { "id": "normal_mode", "type": "mode" },
+    { "id": "buy_decision", "type": "decision" },
+    { "id": "sell_decision", "type": "decision" },
+    { "id": "wait_decision", "type": "decision" },
+    { "id": "no_go_decision", "type": "decision" }
+  ],
+  "edges": [
+    {
+      "from": "market_structure",
+      "to": "bias",
+      "relation": "defines",
+      "confidence": "medium"
+    },
+    {
+      "from": "support_resistance",
+      "to": "confirmation",
+      "relation": "supports",
+      "confidence": "medium"
+    },
+    {
+      "from": "ema_context",
+      "to": "bias",
+      "relation": "filters",
+      "confidence": "medium"
+    },
+    {
+      "from": "liquidity",
+      "to": "trade_setup_quality",
+      "relation": "improves",
+      "confidence": "medium"
+    },
+    {
+      "from": "confirmation",
+      "to": "entry_signal",
+      "relation": "required_for",
+      "confidence": "high"
+    },
+    {
+      "from": "trade_setup_quality",
+      "to": "entry_signal",
+      "relation": "required_for",
+      "confidence": "high"
+    },
+    {
+      "from": "risk_reward",
+      "to": "buy_decision",
+      "relation": "gates",
+      "confidence": "high"
+    },
+    {
+      "from": "risk_reward",
+      "to": "sell_decision",
+      "relation": "gates",
+      "confidence": "high"
+    },
+    {
+      "from": "stop_loss",
+      "to": "position_risk",
+      "relation": "determines",
+      "confidence": "high"
+    },
+    {
+      "from": "take_profit",
+      "to": "risk_reward",
+      "relation": "determines",
+      "confidence": "high"
+    },
+    {
+      "from": "set_and_forget",
+      "to": "normal_mode",
+      "relation": "preferred_management_style",
+      "confidence": "medium"
+    },
+    {
+      "from": "do_not_force_trade",
+      "to": "wait_decision",
+      "relation": "drives",
+      "confidence": "high"
+    },
+    {
+      "from": "wait_for_good_setup",
+      "to": "wait_decision",
+      "relation": "drives",
+      "confidence": "high"
+    },
+    {
+      "from": "flip_mode",
+      "to": "position_risk",
+      "relation": "allows_higher_risk",
+      "confidence": "medium"
+    },
+    {
+      "from": "normal_mode",
+      "to": "position_risk",
+      "relation": "requires_lower_risk",
+      "confidence": "high"
+    },
+    {
+      "from": "bias",
+      "to": "buy_decision",
+      "relation": "supports_when_bullish",
+      "confidence": "medium"
+    },
+    {
+      "from": "bias",
+      "to": "sell_decision",
+      "relation": "supports_when_bearish",
+      "confidence": "medium"
+    }
+  ],
+  "candidate_rules": [
+    {
+      "id": "KG_R1",
+      "text": "Geen duidelijke bias of structure = geen trade.",
+      "confidence": "medium"
+    },
+    {
+      "id": "KG_R2",
+      "text": "Confirmation is nodig voor entry, niet alleen een idee of gevoel.",
+      "confidence": "high"
+    },
+    {
+      "id": "KG_R3",
+      "text": "Risk/reward moet positief en meestal minimaal rond 1:2 zijn.",
+      "confidence": "high"
+    },
+    {
+      "id": "KG_R4",
+      "text": "Liever wachten dan een middelmatige setup forceren.",
+      "confidence": "high"
+    },
+    {
+      "id": "KG_R5",
+      "text": "Normal mode moet conservatiever zijn dan flip mode.",
+      "confidence": "high"
+    }
+  ]
+}

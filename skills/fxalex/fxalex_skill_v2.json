@@ -1,0 +1,170 @@
+{
+  "skill_name": "fxalex_skill_v2",
+  "version": "2.0",
+  "status": "draft_but_usable",
+  "purpose": "Decision skill for BUY / SELL / WAIT / NO-GO based on distilled fxalex strategy concepts.",
+  "modes": {
+    "normal": {
+      "max_risk_percent": 1.5,
+      "min_risk_reward": 2.0,
+      "min_setup_quality": 7,
+      "requires_confirmation": true,
+      "requires_clear_bias": true,
+      "requires_set_and_forget_possible": true
+    },
+    "flip": {
+      "max_risk_percent": 75.0,
+      "min_risk_reward": 2.0,
+      "min_setup_quality": 8,
+      "requires_confirmation": true,
+      "requires_clear_bias": true,
+      "requires_set_and_forget_possible": true
+    }
+  },
+  "hard_gates": [
+    {
+      "id": "HG1",
+      "if": "bias in ['neutral', 'unknown']",
+      "decision": "WAIT",
+      "reason_code": "BIAS_UNKNOWN",
+      "note": "Geen duidelijke bias = niet forceren."
+    },
+    {
+      "id": "HG2",
+      "if": "market_structure_state in ['range', 'unclear']",
+      "decision": "WAIT",
+      "reason_code": "STRUCTURE_UNCLEAR",
+      "note": "Onduidelijke structure = geen trade."
+    },
+    {
+      "id": "HG3",
+      "if": "confirmation_present == false",
+      "decision": "WAIT",
+      "reason_code": "CONFIRMATION_MISSING",
+      "note": "Geen confirmation = geen entry."
+    },
+    {
+      "id": "HG4",
+      "if": "risk_reward_ratio < 2.0",
+      "decision": "NO-GO",
+      "reason_code": "RR_TOO_LOW",
+      "note": "Risk/reward onder minimum."
+    },
+    {
+      "id": "HG5",
+      "if": "mode == 'normal' and planned_risk_percent > 1.5",
+      "decision": "NO-GO",
+      "reason_code": "RISK_TOO_HIGH",
+      "note": "Normal mode is conservatief."
+    },
+    {
+      "id": "HG6",
+      "if": "mode == 'flip' and planned_risk_percent > 75.0",
+      "decision": "NO-GO",
+      "reason_code": "RISK_TOO_HIGH",
+      "note": "Zelfs flip mode heeft bovengrens."
+    },
+    {
+      "id": "HG7",
+      "if": "setup_quality < 7 and mode == 'normal'",
+      "decision": "WAIT",
+      "reason_code": "SETUP_TOO_WEAK",
+      "note": "Geen sterke setup."
+    },
+    {
+      "id": "HG8",
+      "if": "setup_quality < 8 and mode == 'flip'",
+      "decision": "WAIT",
+      "reason_code": "SETUP_TOO_WEAK",
+      "note": "Flip mode vraagt juist een uitzonderlijk sterke setup."
+    },
+    {
+      "id": "HG9",
+      "if": "set_and_forget_possible == false",
+      "decision": "WAIT",
+      "reason_code": "SET_AND_FORGET_NOT_POSSIBLE",
+      "note": "Trade moet uitvoerbaar zijn zonder micromanagement."
+    },
+    {
+      "id": "HG10",
+      "if": "trader_condition in ['tired', 'traveling', 'distracted']",
+      "decision": "WAIT",
+      "reason_code": "TRADER_STATE_BAD",
+      "note": "Slechte mentale/fysieke staat = liever geen trade."
+    }
+  ],
+  "direction_logic": [
+    {
+      "id": "DL1",
+      "if": "bias == 'bullish' and market_structure_state == 'bullish_confirmed' and confirmation_present == true and risk_reward_ratio >= 2.0 and setup_quality >= 7",
+      "decision": "BUY",
+      "confidence_base": 70
+    },
+    {
+      "id": "DL2",
+      "if": "bias == 'bearish' and market_structure_state == 'bearish_confirmed' and confirmation_present == true and risk_reward_ratio >= 2.0 and setup_quality >= 7",
+      "decision": "SELL",
+      "confidence_base": 70
+    }
+  ],
+  "confidence_adjustments": [
+    {
+      "id": "CA1",
+      "if": "support_resistance_context in ['resistance_flip_to_support', 'support_holding'] and bias == 'bullish'",
+      "adjustment": 8
+    },
+    {
+      "id": "CA2",
+      "if": "support_resistance_context in ['support_flip_to_resistance', 'resistance_holding'] and bias == 'bearish'",
+      "adjustment": 8
+    },
+    {
+      "id": "CA3",
+      "if": "ema_context == 'bullish_support' and bias == 'bullish'",
+      "adjustment": 5
+    },
+    {
+      "id": "CA4",
+      "if": "ema_context == 'bearish_resistance' and bias == 'bearish'",
+      "adjustment": 5
+    },
+    {
+      "id": "CA5",
+      "if": "liquidity_context in ['sweep_present', 'liquidity_taken']",
+      "adjustment": 5
+    },
+    {
+      "id": "CA6",
+      "if": "setup_quality >= 9",
+      "adjustment": 7
+    }
+  ],
+  "default_fallback": {
+    "decision": "WAIT",
+    "confidence_base": 40,
+    "note": "Bij twijfel niet traden."
+  },
+  "reasoning_style": {
+    "must_reference": [
+      "bias",
+      "market_structure_state",
+      "confirmation_present",
+      "risk_reward_ratio",
+      "planned_risk_percent",
+      "set_and_forget_possible"
+    ],
+    "preferred_reference": [
+      "support_resistance_context",
+      "ema_context",
+      "liquidity_context",
+      "trader_condition"
+    ]
+  },
+  "output_template": {
+    "decision": "BUY | SELL | WAIT | NO-GO",
+    "confidence_score": 0,
+    "reason_codes": [],
+    "summary": "",
+    "mode_used": "normal | flip"
+  }
+}

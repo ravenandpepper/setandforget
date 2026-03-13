@@ -1,0 +1,170 @@
+{
+  "cases": [
+    {
+      "id": "buy_primary_only_creates_ticket",
+      "snapshot": {
+        "pair": "EURUSD",
+        "execution_timeframe": "4H",
+        "execution_mode": "paper",
+        "fxalex_confluence_enabled": false,
+        "weekly_trend": "bullish",
+        "daily_trend": "bullish",
+        "h4_pullback_direction": "bearish",
+        "h4_pullback_structure": "ll_lh",
+        "h4_reversal_state": "confirmed_bullish",
+        "h4_break_of_structure": true,
+        "first_entry_structure": "first_hl",
+        "aoi_zone_status": "inside_50_61_8",
+        "aoi_confluence_count": 3,
+        "aoi_has_sr": true,
+        "aoi_has_order_block": true,
+        "aoi_has_structural_level": true,
+        "confirmation_present": true,
+        "confirmation_type": "bullish_engulfing",
+        "stop_loss_basis": "last_swing",
+        "risk_reward_ratio": 2.4,
+        "planned_risk_percent": 1.0,
+        "open_trades_count": 1,
+        "high_impact_news_imminent": false,
+        "session_window": "london_newyork_overlap",
+        "set_and_forget_possible": true,
+        "entry_price": 1.0862,
+        "stop_loss_price": 1.0818,
+        "take_profit_price": 1.0968,
+        "notes": "Paper fixture primary only"
+      },
+      "allow_fxalex_call": false,
+      "expected": {
+        "decision": "BUY",
+        "paper_trade_created": true,
+        "logged_rows": 1,
+        "fxalex_confluence_used": false,
+        "fxalex_vote_score": null,
+        "final_engine_source": "primary_only"
+      }
+    },
+    {
+      "id": "buy_with_fxalex_creates_ticket_with_metadata",
+      "snapshot": {
+        "pair": "EURUSD",
+        "execution_timeframe": "4H",
+        "execution_mode": "paper",
+        "fxalex_confluence_enabled": true,
+        "weekly_trend": "bullish",
+        "daily_trend": "bullish",
+        "h4_pullback_direction": "bearish",
+        "h4_pullback_structure": "ll_lh",
+        "h4_reversal_state": "confirmed_bullish",
+        "h4_break_of_structure": true,
+        "first_entry_structure": "first_hl",
+        "aoi_zone_status": "inside_50_61_8",
+        "aoi_confluence_count": 3,
+        "aoi_has_sr": true,
+        "aoi_has_order_block": true,
+        "aoi_has_structural_level": true,
+        "confirmation_present": true,
+        "confirmation_type": "bullish_engulfing",
+        "stop_loss_basis": "last_swing",
+        "risk_reward_ratio": 2.4,
+        "planned_risk_percent": 1.0,
+        "open_trades_count": 1,
+        "high_impact_news_imminent": false,
+        "session_window": "london_newyork_overlap",
+        "set_and_forget_possible": true,
+        "entry_price": 1.0862,
+        "stop_loss_price": 1.0818,
+        "take_profit_price": 1.0968,
+        "notes": "Paper fixture with fxalex"
+      },
+      "fxalex_vote_result": {
+        "direction": "STRONG_SUPPORT",
+        "total_score": 123,
+        "top_claims": []
+      },
+      "allow_fxalex_call": true,
+      "expected": {
+        "decision": "BUY",
+        "paper_trade_created": true,
+        "logged_rows": 1,
+        "fxalex_confluence_used": true,
+        "fxalex_vote_score": 123,
+        "final_engine_source": "primary_plus_fxalex"
+      }
+    },
+    {
+      "id": "blocked_decisions_do_not_create_ticket",
+      "variants": [
+        {
+          "label": "wait_case",
+          "snapshot": {
+            "pair": "EURUSD",
+            "execution_timeframe": "4H",
+            "execution_mode": "paper",
+            "fxalex_confluence_enabled": true,
+            "weekly_trend": "bullish",
+            "daily_trend": "bearish",
+            "h4_pullback_direction": "bearish",
+            "h4_pullback_structure": "ll_lh",
+            "h4_reversal_state": "confirmed_bullish",
+            "h4_break_of_structure": true,
+            "first_entry_structure": "first_hl",
+            "aoi_zone_status": "inside_50_61_8",
+            "aoi_confluence_count": 3,
+            "aoi_has_sr": true,
+            "aoi_has_order_block": true,
+            "aoi_has_structural_level": true,
+            "confirmation_present": true,
+            "confirmation_type": "bullish_engulfing",
+            "stop_loss_basis": "last_swing",
+            "risk_reward_ratio": 2.4,
+            "planned_risk_percent": 1.0,
+            "open_trades_count": 1,
+            "high_impact_news_imminent": false,
+            "session_window": "london_newyork_overlap",
+            "set_and_forget_possible": true,
+            "notes": "Paper fixture wait"
+          },
+          "allow_fxalex_call": false,
+          "expected_decision": "WAIT"
+        },
+        {
+          "label": "no_go_case",
+          "snapshot": {
+            "pair": "EURUSD",
+            "execution_timeframe": "4H",
+            "execution_mode": "paper",
+            "fxalex_confluence_enabled": true,
+            "weekly_trend": "bullish",
+            "daily_trend": "bullish",
+            "h4_pullback_direction": "bearish",
+            "h4_pullback_structure": "ll_lh",
+            "h4_reversal_state": "confirmed_bullish",
+            "h4_break_of_structure": true,
+            "first_entry_structure": "first_hl",
+            "aoi_zone_status": "inside_50_61_8",
+            "aoi_confluence_count": 3,
+            "aoi_has_sr": true,
+            "aoi_has_order_block": true,
+            "aoi_has_structural_level": true,
+            "confirmation_present": true,
+            "confirmation_type": "bullish_engulfing",
+            "stop_loss_basis": "last_swing",
+            "risk_reward_ratio": 1.7,
+            "planned_risk_percent": 1.0,
+            "open_trades_count": 1,
+            "high_impact_news_imminent": false,
+            "session_window": "london_newyork_overlap",
+            "set_and_forget_possible": true,
+            "notes": "Paper fixture no-go"
+          },
+          "allow_fxalex_call": false,
+          "expected_decision": "NO-GO"
+        }
+      ],
+      "expected": {
+        "paper_trade_created": false,
+        "logged_rows": 0
+      }
+    }
+  ]
+}

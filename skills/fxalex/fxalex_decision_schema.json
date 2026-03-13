@@ -1,0 +1,173 @@
+{
+  "schema_name": "fxalex_decision_schema",
+  "version": "1.0",
+  "purpose": "Input contract voor OpenClaw om BUY / SELL / WAIT / NO-GO te beslissen.",
+  "fields": [
+    {
+      "name": "pair",
+      "type": "string",
+      "required": true,
+      "example": "GBPUSD"
+    },
+    {
+      "name": "timeframe",
+      "type": "string",
+      "required": true,
+      "allowed_values": ["W", "D", "4H", "1H", "15M", "5M"]
+    },
+    {
+      "name": "mode",
+      "type": "string",
+      "required": true,
+      "allowed_values": ["normal", "flip"]
+    },
+    {
+      "name": "bias",
+      "type": "string",
+      "required": true,
+      "allowed_values": ["bullish", "bearish", "neutral", "unknown"]
+    },
+    {
+      "name": "market_structure_state",
+      "type": "string",
+      "required": true,
+      "allowed_values": [
+        "bullish_confirmed",
+        "bearish_confirmed",
+        "range",
+        "broken_bullish",
+        "broken_bearish",
+        "unclear"
+      ]
+    },
+    {
+      "name": "support_resistance_context",
+      "type": "string",
+      "required": false,
+      "allowed_values": [
+        "support_holding",
+        "resistance_holding",
+        "support_flip_to_resistance",
+        "resistance_flip_to_support",
+        "not_clear"
+      ]
+    },
+    {
+      "name": "ema_context",
+      "type": "string",
+      "required": false,
+      "allowed_values": [
+        "bullish_support",
+        "bearish_resistance",
+        "mixed",
+        "none"
+      ]
+    },
+    {
+      "name": "liquidity_context",
+      "type": "string",
+      "required": false,
+      "allowed_values": [
+        "sweep_present",
+        "liquidity_taken",
+        "no_clear_liquidity_event",
+        "unknown"
+      ]
+    },
+    {
+      "name": "confirmation_present",
+      "type": "boolean",
+      "required": true
+    },
+    {
+      "name": "setup_quality",
+      "type": "integer",
+      "required": true,
+      "range": [0, 10]
+    },
+    {
+      "name": "entry_price",
+      "type": "number",
+      "required": false
+    },
+    {
+      "name": "stop_loss_price",
+      "type": "number",
+      "required": false
+    },
+    {
+      "name": "take_profit_price",
+      "type": "number",
+      "required": false
+    },
+    {
+      "name": "risk_reward_ratio",
+      "type": "number",
+      "required": true
+    },
+    {
+      "name": "planned_risk_percent",
+      "type": "number",
+      "required": true
+    },
+    {
+      "name": "set_and_forget_possible",
+      "type": "boolean",
+      "required": true
+    },
+    {
+      "name": "trader_condition",
+      "type": "string",
+      "required": false,
+      "allowed_values": [
+        "focused",
+        "tired",
+        "traveling",
+        "distracted",
+        "unknown"
+      ]
+    },
+    {
+      "name": "notes",
+      "type": "string",
+      "required": false
+    }
+  ],
+  "reason_code_catalog": [
+    "BIAS_UNKNOWN",
+    "BIAS_CONFIRMED",
+    "STRUCTURE_UNCLEAR",
+    "STRUCTURE_CONFIRMED",
+    "CONFIRMATION_MISSING",
+    "CONFIRMATION_PRESENT",
+    "RR_TOO_LOW",
+    "RR_VALID",
+    "RISK_TOO_HIGH",
+    "SETUP_TOO_WEAK",
+    "SETUP_STRONG",
+    "SET_AND_FORGET_NOT_POSSIBLE",
+    "TRADER_STATE_BAD",
+    "MODE_MISMATCH",
+    "SR_CONFIRMS_BUY",
+    "SR_CONFIRMS_SELL",
+    "EMA_SUPPORTS",
+    "LIQUIDITY_CONFIRMS",
+    "RULE_ENGINE_HARD_GATE",
+    "CLAIMS_SUPPORT",
+    "CLAIMS_STRONG_SUPPORT",
+    "CLAIMS_CONFLICT",
+    "CLAIMS_NEUTRAL",
+    "CLAIMS_SUPPORT_BUT_RULE_WAIT",
+    "INPUT_SCHEMA_INVALID",
+    "OUTPUT_SCHEMA_INVALID"
+  ],
+  "expected_output": {
+    "decision": ["BUY", "SELL", "WAIT", "NO-GO"],
+    "confidence_score": "0-100",
+    "reason_codes": "subset of reason_code_catalog",
+    "summary": "string",
+    "mode_used": ["normal", "flip"],
+    "advisory_mode": true,
+    "execution_allowed": false
+  }
+}

@@ -1,0 +1,216 @@
+{
+  "skill_name": "set_and_forget_skill_v1",
+  "version": "1.0",
+  "status": "draft_usable",
+  "strategy_role": "primary_engine",
+  "purpose": "Primary OpenClaw decision framework for the Set & Forget Swing Strategy.",
+  "timeframe_model": {
+    "trend_timeframes": ["W", "D"],
+    "entry_timeframe": "4H"
+  },
+  "risk_policy": {
+    "execution_mode": "paper",
+    "max_risk_percent": 2.0,
+    "min_risk_reward": 2.0,
+    "max_open_trades": 2
+  },
+  "advisory_layers": {
+    "fxalex": {
+      "enabled_by_default": false,
+      "role": "secondary_confidence_confluence_only",
+      "cannot_override_hard_gates": true,
+      "support_bonus": 3,
+      "strong_support_bonus": 6,
+      "conflict_penalty": 8,
+      "neutral_penalty": 2
+    },
+    "news_context": {
+      "enabled_by_default": false,
+      "role": "macro_risk_context_only",
+      "provider": "brave_search",
+      "freshness": "pd",
+      "result_count": 5,
+      "can_lower_confidence": true,
+      "can_advise_wait": true,
+      "cannot_create_buy_or_sell": true
+    }
+  },
+  "hard_gates": [
+    {
+      "id": "SG1",
+      "if": "weekly_trend in ['neutral', 'unknown'] or daily_trend in ['neutral', 'unknown']",
+      "decision": "WAIT",
+      "reason_code": "HIGHER_TF_UNCLEAR",
+      "note": "Weekly en Daily moeten allebei duidelijk zijn."
+    },
+    {
+      "id": "SG2",
+      "if": "weekly_trend != daily_trend",
+      "decision": "WAIT",
+      "reason_code": "HIGHER_TF_MISALIGNED",
+      "note": "Weekly en Daily moeten dezelfde richting hebben."
+    },
+    {
+      "id": "SG3",
+      "if": "(weekly_trend == 'bullish' and (h4_pullback_direction != 'bearish' or h4_pullback_structure != 'll_lh')) or (weekly_trend == 'bearish' and (h4_pullback_direction != 'bullish' or h4_pullback_structure != 'hh_hl'))",
+      "decision": "WAIT",
+      "reason_code": "PULLBACK_NOT_PRESENT",
+      "note": "Zonder pullback is de entry te laat of niet logisch."
+    },
+    {
+      "id": "SG4",
+      "if": "(weekly_trend == 'bullish' and h4_reversal_state != 'confirmed_bullish') or (weekly_trend == 'bearish' and h4_reversal_state != 'confirmed_bearish') or h4_break_of_structure == false",
+      "decision": "WAIT",
+      "reason_code": "H4_REVERSAL_NOT_CONFIRMED",
+      "note": "4H moet eerst terugdraaien in de richting van de hogere trend."
+    },
+    {
+      "id": "SG5",
+      "if": "(weekly_trend == 'bullish' and first_entry_structure != 'first_hl') or (weekly_trend == 'bearish' and first_entry_structure != 'first_lh')",
+      "decision": "WAIT",
+      "reason_code": "FIRST_ENTRY_STRUCTURE_MISSING",
+      "note": "Entry mag alleen op de eerste HL of LH na de draai."
+    },
+    {
+      "id": "SG6",
+      "if": "aoi_zone_status != 'inside_50_61_8'",
+      "decision": "WAIT",
+      "reason_code": "AOI_NOT_READY",
+      "note": "Prijs moet in de fib AOI zitten."
+    },
+    {
+      "id": "SG7",
+      "if": "aoi_confluence_count < 3",
+      "decision": "WAIT",
+      "reason_code": "AOI_CONFLUENCE_TOO_WEAK",
+      "note": "Minimaal drie AOI confluences zijn vereist."
+    },
+    {
+      "id": "SG8",
+      "if": "confirmation_present == false",
+      "decision": "WAIT",
+      "reason_code": "CONFIRMATION_MISSING",
+      "note": "Geen candle-close bevestiging betekent geen entry."
+    },
+    {
+      "id": "SG9",
+      "if": "high_impact_news_imminent == true",
+      "decision": "WAIT",
+      "reason_code": "NEWS_BLOCK",
+      "note": "Niet traden rond high-impact nieuws."
+    },
+    {
+      "id": "SG10",
+      "if": "session_window != 'london_newyork_overlap'",
+      "decision": "WAIT",
+      "reason_code": "SESSION_BLOCK",
+      "note": "Entries alleen tijdens Londen-New York overlap."
+    },
+    {
+      "id": "SG11",
+      "if": "planned_risk_percent > 2.0",
+      "decision": "NO-GO",
+      "reason_code": "RISK_TOO_HIGH",
+      "note": "Risk per trade mag niet boven 2% uitkomen."
+    },
+    {
+      "id": "SG12",
+      "if": "risk_reward_ratio < 2.0",
+      "decision": "NO-GO",
+      "reason_code": "RR_TOO_LOW",
+      "note": "RR moet minimaal 1:2 zijn."
+    },
+    {
+      "id": "SG13",
+      "if": "open_trades_count >= 2",
+      "decision": "WAIT",
+      "reason_code": "OPEN_TRADES_LIMIT_REACHED",
+      "note": "Maximaal twee open trades tegelijk."
+    },
+    {
+      "id": "SG14",
+      "if": "set_and_forget_possible == false",
+      "decision": "WAIT",
+      "reason_code": "SET_AND_FORGET_NOT_POSSIBLE",
+      "note": "Trade moet uitvoerbaar zijn zonder micromanagement."
+    },
+    {
+      "id": "SG15",
+      "if": "stop_loss_basis not in ['last_swing', 'fib_78_6']",
+      "decision": "NO-GO",
+      "reason_code": "STOP_PLACEMENT_INVALID",
+      "note": "Stop-loss moet achter de laatste swing of de 78.6% retracement liggen."
+    }
+  ],
+  "direction_logic": [
+    {
+      "id": "DL1",
+      "if": "weekly_trend == 'bullish' and daily_trend == 'bullish' and h4_pullback_direction == 'bearish' and h4_pullback_structure == 'll_lh' and h4_reversal_state == 'confirmed_bullish' and h4_break_of_structure == true and first_entry_structure == 'first_hl' and aoi_zone_status == 'inside_50_61_8' and aoi_confluence_count >= 3 and confirmation_present == true",
+      "decision": "BUY",
+      "confidence_base": 72
+    },
+    {
+      "id": "DL2",
+      "if": "weekly_trend == 'bearish' and daily_trend == 'bearish' and h4_pullback_direction == 'bullish' and h4_pullback_structure == 'hh_hl' and h4_reversal_state == 'confirmed_bearish' and h4_break_of_structure == true and first_entry_structure == 'first_lh' and aoi_zone_status == 'inside_50_61_8' and aoi_confluence_count >= 3 and confirmation_present == true",
+      "decision": "SELL",
+      "confidence_base": 72
+    }
+  ],
+  "confidence_adjustments": [
+    {
+      "id": "CA1",
+      "if": "aoi_confluence_count >= 4",
+      "adjustment": 6,
+      "reason_code": "AOI_CONFLUENCE_STRONG"
+    },
+    {
+      "id": "CA2",
+      "if": "h4_break_of_structure == true",
+      "adjustment": 5,
+      "reason_code": "BOS_CONFIRMED"
+    },
+    {
+      "id": "CA3",
+      "if": "confirmation_type in ['bullish_engulfing', 'bearish_engulfing']",
+      "adjustment": 4,
+      "reason_code": "ENGULFING_CONFIRMATION"
+    },
+    {
+      "id": "CA4",
+      "if": "confirmation_type == 'hammer'",
+      "adjustment": 3,
+      "reason_code": "HAMMER_CONFIRMATION"
+    },
+    {
+      "id": "CA5",
+      "if": "confirmation_type == 'shooting_star'",
+      "adjustment": 3,
+      "reason_code": "SHOOTING_STAR_CONFIRMATION"
+    },
+    {
+      "id": "CA6",
+      "if": "risk_reward_ratio >= 2.5",
+      "adjustment": 4,
+      "reason_code": "RR_STRONG"
+    },
+    {
+      "id": "CA7",
+      "if": "open_trades_count == 0",
+      "adjustment": 2,
+      "reason_code": "PORTFOLIO_CAPACITY_OK"
+    }
+  ],
+  "default_fallback": {
+    "decision": "WAIT",
+    "confidence_base": 40,
+    "note": "No setup = no trade."
+  },
+  "output_template": {
+    "decision": "BUY | SELL | WAIT | NO-GO",
+    "confidence_score": 0,
+    "reason_codes": [],
+    "summary": "",
+    "primary_strategy": "set_and_forget",
+    "execution_mode": "paper | advisory"
+  }
+}

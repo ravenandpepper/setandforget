@@ -1,0 +1,223 @@
+{
+  "schema_name": "set_and_forget_decision_schema",
+  "version": "1.0",
+  "purpose": "Input contract voor de primaire Set & Forget Swing Strategy decision engine.",
+  "fields": [
+    {
+      "name": "pair",
+      "type": "string",
+      "required": true,
+      "example": "EURUSD"
+    },
+    {
+      "name": "execution_timeframe",
+      "type": "string",
+      "required": true,
+      "allowed_values": ["4H"]
+    },
+    {
+      "name": "execution_mode",
+      "type": "string",
+      "required": true,
+      "allowed_values": ["paper", "advisory"]
+    },
+    {
+      "name": "fxalex_confluence_enabled",
+      "type": "boolean",
+      "required": false
+    },
+    {
+      "name": "news_context_enabled",
+      "type": "boolean",
+      "required": false
+    },
+    {
+      "name": "weekly_trend",
+      "type": "string",
+      "required": true,
+      "allowed_values": ["bullish", "bearish", "neutral", "unknown"]
+    },
+    {
+      "name": "daily_trend",
+      "type": "string",
+      "required": true,
+      "allowed_values": ["bullish", "bearish", "neutral", "unknown"]
+    },
+    {
+      "name": "h4_pullback_direction",
+      "type": "string",
+      "required": true,
+      "allowed_values": ["bullish", "bearish", "none", "unclear"]
+    },
+    {
+      "name": "h4_pullback_structure",
+      "type": "string",
+      "required": true,
+      "allowed_values": ["hh_hl", "ll_lh", "mixed", "unclear"]
+    },
+    {
+      "name": "h4_reversal_state",
+      "type": "string",
+      "required": true,
+      "allowed_values": ["confirmed_bullish", "confirmed_bearish", "not_confirmed", "unclear"]
+    },
+    {
+      "name": "h4_break_of_structure",
+      "type": "boolean",
+      "required": true
+    },
+    {
+      "name": "first_entry_structure",
+      "type": "string",
+      "required": true,
+      "allowed_values": ["first_hl", "first_lh", "not_present", "unclear"]
+    },
+    {
+      "name": "aoi_zone_status",
+      "type": "string",
+      "required": true,
+      "allowed_values": ["inside_50_61_8", "outside_zone", "unknown"]
+    },
+    {
+      "name": "aoi_confluence_count",
+      "type": "integer",
+      "required": true,
+      "range": [0, 5]
+    },
+    {
+      "name": "aoi_has_sr",
+      "type": "boolean",
+      "required": true
+    },
+    {
+      "name": "aoi_has_order_block",
+      "type": "boolean",
+      "required": true
+    },
+    {
+      "name": "aoi_has_structural_level",
+      "type": "boolean",
+      "required": true
+    },
+    {
+      "name": "confirmation_present",
+      "type": "boolean",
+      "required": true
+    },
+    {
+      "name": "confirmation_type",
+      "type": "string",
+      "required": true,
+      "allowed_values": ["bullish_engulfing", "bearish_engulfing", "hammer", "shooting_star", "bos_retest", "none", "unknown"]
+    },
+    {
+      "name": "stop_loss_basis",
+      "type": "string",
+      "required": true,
+      "allowed_values": ["last_swing", "fib_78_6", "invalid", "unknown"]
+    },
+    {
+      "name": "risk_reward_ratio",
+      "type": "number",
+      "required": true
+    },
+    {
+      "name": "planned_risk_percent",
+      "type": "number",
+      "required": true,
+      "range": [0, 5]
+    },
+    {
+      "name": "open_trades_count",
+      "type": "integer",
+      "required": true,
+      "range": [0, 10]
+    },
+    {
+      "name": "high_impact_news_imminent",
+      "type": "boolean",
+      "required": true
+    },
+    {
+      "name": "session_window",
+      "type": "string",
+      "required": true,
+      "allowed_values": ["london_newyork_overlap", "outside_overlap", "unknown"]
+    },
+    {
+      "name": "set_and_forget_possible",
+      "type": "boolean",
+      "required": true
+    },
+    {
+      "name": "entry_price",
+      "type": "number",
+      "required": false
+    },
+    {
+      "name": "stop_loss_price",
+      "type": "number",
+      "required": false
+    },
+    {
+      "name": "take_profit_price",
+      "type": "number",
+      "required": false
+    },
+    {
+      "name": "notes",
+      "type": "string",
+      "required": false
+    }
+  ],
+  "reason_code_catalog": [
+    "HIGHER_TF_UNCLEAR",
+    "HIGHER_TF_MISALIGNED",
+    "HIGHER_TF_ALIGNED",
+    "PULLBACK_NOT_PRESENT",
+    "PULLBACK_CONFIRMED",
+    "H4_REVERSAL_NOT_CONFIRMED",
+    "H4_REVERSAL_CONFIRMED",
+    "FIRST_ENTRY_STRUCTURE_MISSING",
+    "FIRST_ENTRY_STRUCTURE_READY",
+    "AOI_NOT_READY",
+    "AOI_CONFLUENCE_TOO_WEAK",
+    "AOI_VALID",
+    "AOI_CONFLUENCE_STRONG",
+    "CONFIRMATION_MISSING",
+    "CONFIRMATION_PRESENT",
+    "NEWS_BLOCK",
+    "SESSION_BLOCK",
+    "RISK_TOO_HIGH",
+    "RR_TOO_LOW",
+    "RR_VALID",
+    "RR_STRONG",
+    "OPEN_TRADES_LIMIT_REACHED",
+    "SET_AND_FORGET_NOT_POSSIBLE",
+    "STOP_PLACEMENT_INVALID",
+    "BULLISH_SWING_READY",
+    "BEARISH_SWING_READY",
+    "BOS_CONFIRMED",
+    "ENGULFING_CONFIRMATION",
+    "HAMMER_CONFIRMATION",
+    "SHOOTING_STAR_CONFIRMATION",
+    "PORTFOLIO_CAPACITY_OK",
+    "FXALEX_SUPPORT",
+    "FXALEX_STRONG_SUPPORT",
+    "FXALEX_CONFLICT",
+    "FXALEX_NEUTRAL",
+    "HIGH_IMPACT_NEWS",
+    "CENTRAL_BANK_EVENT",
+    "MACRO_VOLATILITY_WARNING",
+    "INPUT_SCHEMA_INVALID",
+    "OUTPUT_SCHEMA_INVALID"
+  ],
+  "expected_output": {
+    "decision": ["BUY", "SELL", "WAIT", "NO-GO"],
+    "confidence_score": "0-100",
+    "reason_codes": "subset of reason_code_catalog",
+    "summary": "string",
+    "primary_strategy": "set_and_forget",
+    "execution_mode": ["paper", "advisory"]
+  }
+}

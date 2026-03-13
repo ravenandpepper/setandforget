@@ -1,0 +1,258 @@
+{
+  "cases": [
+    {
+      "id": "A_bullish_buy_with_strong_support",
+      "description": "Bullish primary BUY blijft BUY en krijgt alleen extra confidence bij fxalex strong support.",
+      "snapshot": {
+        "pair": "EURUSD",
+        "execution_timeframe": "4H",
+        "execution_mode": "paper",
+        "fxalex_confluence_enabled": true,
+        "weekly_trend": "bullish",
+        "daily_trend": "bullish",
+        "h4_pullback_direction": "bearish",
+        "h4_pullback_structure": "ll_lh",
+        "h4_reversal_state": "confirmed_bullish",
+        "h4_break_of_structure": true,
+        "first_entry_structure": "first_hl",
+        "aoi_zone_status": "inside_50_61_8",
+        "aoi_confluence_count": 3,
+        "aoi_has_sr": true,
+        "aoi_has_order_block": true,
+        "aoi_has_structural_level": true,
+        "confirmation_present": true,
+        "confirmation_type": "bullish_engulfing",
+        "stop_loss_basis": "last_swing",
+        "risk_reward_ratio": 2.4,
+        "planned_risk_percent": 1.0,
+        "open_trades_count": 1,
+        "high_impact_news_imminent": false,
+        "session_window": "london_newyork_overlap",
+        "set_and_forget_possible": true,
+        "entry_price": 1.0862,
+        "stop_loss_price": 1.0818,
+        "take_profit_price": 1.0968,
+        "notes": "Regression fixture A"
+      },
+      "fxalex_vote_result": {
+        "direction": "STRONG_SUPPORT",
+        "total_score": 123,
+        "top_claims": [
+          {
+            "score": 5,
+            "tags": ["BULLISH_CLAIM_MATCH"],
+            "claim_text": "Strong support fixture.",
+            "video_id": "fixture_a",
+            "title": "Fixture A",
+            "categories": ["structure"]
+          }
+        ]
+      },
+      "allow_fxalex_call": true,
+      "expected": {
+        "decision": "BUY",
+        "confidence_score": 87,
+        "reason_codes_include": ["BULLISH_SWING_READY", "FXALEX_STRONG_SUPPORT"],
+        "reason_codes_exclude": ["FXALEX_CONFLICT", "FXALEX_NEUTRAL"],
+        "fxalex_used": true,
+        "fxalex_impact": "confidence_up"
+      }
+    },
+    {
+      "id": "B_bearish_sell_with_neutral",
+      "description": "Bearish primary SELL blijft SELL; neutrale fxalex verlaagt alleen confidence licht.",
+      "snapshot": {
+        "pair": "GBPUSD",
+        "execution_timeframe": "4H",
+        "execution_mode": "paper",
+        "fxalex_confluence_enabled": true,
+        "weekly_trend": "bearish",
+        "daily_trend": "bearish",
+        "h4_pullback_direction": "bullish",
+        "h4_pullback_structure": "hh_hl",
+        "h4_reversal_state": "confirmed_bearish",
+        "h4_break_of_structure": true,
+        "first_entry_structure": "first_lh",
+        "aoi_zone_status": "inside_50_61_8",
+        "aoi_confluence_count": 3,
+        "aoi_has_sr": true,
+        "aoi_has_order_block": true,
+        "aoi_has_structural_level": true,
+        "confirmation_present": true,
+        "confirmation_type": "bearish_engulfing",
+        "stop_loss_basis": "last_swing",
+        "risk_reward_ratio": 2.3,
+        "planned_risk_percent": 1.0,
+        "open_trades_count": 1,
+        "high_impact_news_imminent": false,
+        "session_window": "london_newyork_overlap",
+        "set_and_forget_possible": true,
+        "entry_price": 1.254,
+        "stop_loss_price": 1.2595,
+        "take_profit_price": 1.241,
+        "notes": "Regression fixture B"
+      },
+      "fxalex_vote_result": {
+        "direction": "NEUTRAL",
+        "total_score": 1,
+        "top_claims": []
+      },
+      "allow_fxalex_call": true,
+      "expected": {
+        "decision": "SELL",
+        "confidence_score": 79,
+        "reason_codes_include": ["BEARISH_SWING_READY", "FXALEX_NEUTRAL"],
+        "reason_codes_exclude": ["FXALEX_STRONG_SUPPORT", "FXALEX_CONFLICT"],
+        "fxalex_used": true,
+        "fxalex_impact": "confidence_down_neutral"
+      }
+    },
+    {
+      "id": "C_primary_wait_with_strong_support",
+      "description": "Primary WAIT blijft WAIT, zelfs als fxalex strong support zou geven.",
+      "snapshot": {
+        "pair": "EURUSD",
+        "execution_timeframe": "4H",
+        "execution_mode": "paper",
+        "fxalex_confluence_enabled": true,
+        "weekly_trend": "bullish",
+        "daily_trend": "bearish",
+        "h4_pullback_direction": "bearish",
+        "h4_pullback_structure": "ll_lh",
+        "h4_reversal_state": "confirmed_bullish",
+        "h4_break_of_structure": true,
+        "first_entry_structure": "first_hl",
+        "aoi_zone_status": "inside_50_61_8",
+        "aoi_confluence_count": 3,
+        "aoi_has_sr": true,
+        "aoi_has_order_block": true,
+        "aoi_has_structural_level": true,
+        "confirmation_present": true,
+        "confirmation_type": "bullish_engulfing",
+        "stop_loss_basis": "last_swing",
+        "risk_reward_ratio": 2.4,
+        "planned_risk_percent": 1.0,
+        "open_trades_count": 1,
+        "high_impact_news_imminent": false,
+        "session_window": "london_newyork_overlap",
+        "set_and_forget_possible": true,
+        "notes": "Regression fixture C"
+      },
+      "fxalex_vote_result": {
+        "direction": "STRONG_SUPPORT",
+        "total_score": 120,
+        "top_claims": []
+      },
+      "allow_fxalex_call": false,
+      "expected": {
+        "decision": "WAIT",
+        "confidence_score": 28,
+        "reason_codes_include": ["HIGHER_TF_MISALIGNED"],
+        "reason_codes_exclude": ["FXALEX_STRONG_SUPPORT", "FXALEX_SUPPORT", "FXALEX_CONFLICT", "FXALEX_NEUTRAL"],
+        "fxalex_used": false,
+        "fxalex_impact": "skipped_due_to_primary_decision"
+      }
+    },
+    {
+      "id": "D_primary_no_go_due_to_rr_with_strong_support",
+      "description": "Primary NO-GO vanwege slechte RR blijft NO-GO, ook als fxalex strong support zou geven.",
+      "snapshot": {
+        "pair": "EURUSD",
+        "execution_timeframe": "4H",
+        "execution_mode": "paper",
+        "fxalex_confluence_enabled": true,
+        "weekly_trend": "bullish",
+        "daily_trend": "bullish",
+        "h4_pullback_direction": "bearish",
+        "h4_pullback_structure": "ll_lh",
+        "h4_reversal_state": "confirmed_bullish",
+        "h4_break_of_structure": true,
+        "first_entry_structure": "first_hl",
+        "aoi_zone_status": "inside_50_61_8",
+        "aoi_confluence_count": 3,
+        "aoi_has_sr": true,
+        "aoi_has_order_block": true,
+        "aoi_has_structural_level": true,
+        "confirmation_present": true,
+        "confirmation_type": "bullish_engulfing",
+        "stop_loss_basis": "last_swing",
+        "risk_reward_ratio": 1.7,
+        "planned_risk_percent": 1.0,
+        "open_trades_count": 1,
+        "high_impact_news_imminent": false,
+        "session_window": "london_newyork_overlap",
+        "set_and_forget_possible": true,
+        "notes": "Regression fixture D"
+      },
+      "fxalex_vote_result": {
+        "direction": "STRONG_SUPPORT",
+        "total_score": 110,
+        "top_claims": []
+      },
+      "allow_fxalex_call": false,
+      "expected": {
+        "decision": "NO-GO",
+        "confidence_score": 22,
+        "reason_codes_include": ["RR_TOO_LOW"],
+        "reason_codes_exclude": ["FXALEX_STRONG_SUPPORT", "FXALEX_SUPPORT", "FXALEX_CONFLICT", "FXALEX_NEUTRAL"],
+        "fxalex_used": false,
+        "fxalex_impact": "skipped_due_to_primary_decision"
+      }
+    },
+    {
+      "id": "E_primary_buy_with_conflict",
+      "description": "Primary BUY blijft BUY; conflicterende fxalex verlaagt alleen confidence en geeft conflictcode.",
+      "snapshot": {
+        "pair": "EURUSD",
+        "execution_timeframe": "4H",
+        "execution_mode": "paper",
+        "fxalex_confluence_enabled": true,
+        "weekly_trend": "bullish",
+        "daily_trend": "bullish",
+        "h4_pullback_direction": "bearish",
+        "h4_pullback_structure": "ll_lh",
+        "h4_reversal_state": "confirmed_bullish",
+        "h4_break_of_structure": true,
+        "first_entry_structure": "first_hl",
+        "aoi_zone_status": "inside_50_61_8",
+        "aoi_confluence_count": 3,
+        "aoi_has_sr": true,
+        "aoi_has_order_block": true,
+        "aoi_has_structural_level": true,
+        "confirmation_present": true,
+        "confirmation_type": "bullish_engulfing",
+        "stop_loss_basis": "last_swing",
+        "risk_reward_ratio": 2.4,
+        "planned_risk_percent": 1.0,
+        "open_trades_count": 1,
+        "high_impact_news_imminent": false,
+        "session_window": "london_newyork_overlap",
+        "set_and_forget_possible": true,
+        "notes": "Regression fixture E"
+      },
+      "fxalex_vote_result": {
+        "direction": "CONFLICT",
+        "total_score": -14,
+        "top_claims": [
+          {
+            "score": -2,
+            "tags": ["BEARISH_CONFLICT"],
+            "claim_text": "Conflict fixture.",
+            "video_id": "fixture_e",
+            "title": "Fixture E",
+            "categories": ["structure"]
+          }
+        ]
+      },
+      "allow_fxalex_call": true,
+      "expected": {
+        "decision": "BUY",
+        "confidence_score": 73,
+        "reason_codes_include": ["BULLISH_SWING_READY", "FXALEX_CONFLICT"],
+        "reason_codes_exclude": ["FXALEX_STRONG_SUPPORT", "FXALEX_SUPPORT", "FXALEX_NEUTRAL"],
+        "fxalex_used": true,
+        "fxalex_impact": "confidence_down_conflict"
+      }
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "timestamp": "2026-03-13T09:15:00+00:00",
+  "pair": "EURUSD",
+  "timeframe": "4H",
+  "mode": "paper",
+  "decision": "BUY",
+  "entry_price": 1.0862,
+  "stop_loss_price": 1.0818,
+  "take_profit_price": 1.0968,
+  "risk_reward_ratio": 2.4,
+  "planned_risk_percent": 1.0,
+  "confidence_score": 81,
+  "reason_codes": [
+    "HIGHER_TF_ALIGNED",
+    "PULLBACK_CONFIRMED",
+    "H4_REVERSAL_CONFIRMED",
+    "FIRST_ENTRY_STRUCTURE_READY",
+    "AOI_VALID",
+    "CONFIRMATION_PRESENT",
+    "RR_VALID",
+    "BULLISH_SWING_READY",
+    "BOS_CONFIRMED",
+    "ENGULFING_CONFIRMATION"
+  ],
+  "summary": "Weekly en Daily zijn bullish. | De 4H pullback tegen de hogere trend is aanwezig. | De 4H structuurdraai is bevestigd. | Entry ligt op de first hl binnen de AOI. | Bullish Set & Forget swing is klaar voor uitvoering in paper mode. | Break of structure bevestigt de draai. | Engulfing candle geeft sterke bevestiging.",
+  "fxalex_confluence_used": false,
+  "fxalex_vote_score": null,
+  "final_engine_source": "primary_only"
+}
