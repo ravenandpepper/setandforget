@@ -2,16 +2,22 @@
 
 ## Current setup
 - Local development repo: `/Users/jeroenderaaf/Sites/setandforget`
+- GitHub remote: `git@github.com:ravenandpepper/setandforget.git`
 - VPS bare repo: `/home/traderops/repos/setandforget.git`
 - VPS deployed worktree: `/home/traderops/setandforget`
 
 The VPS deploys automatically through the bare repo `post-receive` hook.
 
+## Remotes
+- `github` = GitHub source repository
+- `origin` = VPS deploy repository
+
 ## Standard workflow
 1. Make changes locally in `/Users/jeroenderaaf/Sites/setandforget`
 2. Run the smallest relevant local validation
 3. Commit the change
-4. Push `main` to `origin`
+4. Push `main` to `github`
+5. Push `main` to `origin`
 
 Example:
 
@@ -20,12 +26,30 @@ cd /Users/jeroenderaaf/Sites/setandforget
 git status
 git add .
 git commit -m "Describe the change"
+git push github main
 git push origin main
 ```
 
-## What push does
-- Push updates `/home/traderops/repos/setandforget.git`
-- The VPS hook checks out `main` into `/home/traderops/setandforget`
+## Recommended push flow
+Push to GitHub first:
+
+```bash
+git push github main
+```
+
+Then deploy to the VPS:
+
+```bash
+git push origin main
+```
+
+## What each push does
+- `git push github main`
+  - updates the GitHub repository
+- `git push origin main`
+  - updates `/home/traderops/repos/setandforget.git`
+  - triggers the VPS hook
+  - checks out `main` into `/home/traderops/setandforget`
 
 ## Useful checks
 Check local status:
@@ -33,6 +57,7 @@ Check local status:
 ```bash
 cd /Users/jeroenderaaf/Sites/setandforget
 git status
+git remote -v
 ```
 
 Check deployed files on VPS:
