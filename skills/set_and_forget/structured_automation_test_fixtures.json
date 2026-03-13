@@ -1,0 +1,79 @@
+{
+  "cases": [
+    {
+      "id": "buy_run_writes_snapshot_decision_and_ticket",
+      "snapshot": {
+        "pair": "EURUSD",
+        "execution_timeframe": "4H",
+        "execution_mode": "paper",
+        "fxalex_confluence_enabled": false,
+        "weekly_trend": "bullish",
+        "daily_trend": "bullish",
+        "h4_pullback_direction": "bearish",
+        "h4_pullback_structure": "ll_lh",
+        "h4_reversal_state": "confirmed_bullish",
+        "h4_break_of_structure": true,
+        "first_entry_structure": "first_hl",
+        "aoi_zone_status": "inside_50_61_8",
+        "aoi_confluence_count": 3,
+        "aoi_has_sr": true,
+        "aoi_has_order_block": true,
+        "aoi_has_structural_level": true,
+        "confirmation_present": true,
+        "confirmation_type": "bullish_engulfing",
+        "stop_loss_basis": "last_swing",
+        "risk_reward_ratio": 2.4,
+        "planned_risk_percent": 1.0,
+        "open_trades_count": 1,
+        "high_impact_news_imminent": false,
+        "session_window": "london_newyork_overlap",
+        "set_and_forget_possible": true,
+        "entry_price": 1.0862,
+        "stop_loss_price": 1.0818,
+        "take_profit_price": 1.0968,
+        "notes": "Structured automation BUY fixture"
+      },
+      "expected": {
+        "decision": "BUY",
+        "exit_code": 0,
+        "paper_trade_created": true
+      }
+    },
+    {
+      "id": "wait_run_writes_snapshot_and_decision_only",
+      "snapshot": {
+        "pair": "EURUSD",
+        "execution_timeframe": "4H",
+        "execution_mode": "paper",
+        "fxalex_confluence_enabled": false,
+        "weekly_trend": "bullish",
+        "daily_trend": "bearish",
+        "h4_pullback_direction": "bearish",
+        "h4_pullback_structure": "ll_lh",
+        "h4_reversal_state": "confirmed_bullish",
+        "h4_break_of_structure": true,
+        "first_entry_structure": "first_hl",
+        "aoi_zone_status": "inside_50_61_8",
+        "aoi_confluence_count": 3,
+        "aoi_has_sr": true,
+        "aoi_has_order_block": true,
+        "aoi_has_structural_level": true,
+        "confirmation_present": true,
+        "confirmation_type": "bullish_engulfing",
+        "stop_loss_basis": "last_swing",
+        "risk_reward_ratio": 2.4,
+        "planned_risk_percent": 1.0,
+        "open_trades_count": 1,
+        "high_impact_news_imminent": false,
+        "session_window": "london_newyork_overlap",
+        "set_and_forget_possible": true,
+        "notes": "Structured automation WAIT fixture"
+      },
+      "expected": {
+        "decision": "WAIT",
+        "exit_code": 0,
+        "paper_trade_created": false
+      }
+    }
+  ]
+}

@@ -558,6 +558,35 @@ def maybe_create_paper_trade(snapshot: dict, payload: dict, log_path: Path):
     return payload
 
 
+def run_decision_cycle(snapshot: dict, skill: dict, schema: dict, paper_trades_log: Path = PAPER_TRADES_LOG_FILE):
+    snapshot_errors = validate_snapshot(snapshot, schema)
+    if snapshot_errors:
+        payload = build_error_payload(
+            snapshot=snapshot,
+            error_code="INPUT_SCHEMA_INVALID",
+            summary="Snapshot validatie tegen het Set & Forget schema is mislukt.",
+            errors=snapshot_errors,
+        )
+        return payload, 1
+
+    result = evaluate_rules(snapshot, skill)
+    result = maybe_apply_fxalex_confluence(snapshot, result, skill)
+    result = maybe_apply_news_context(snapshot, result, skill)
+    unknown_reason_codes = validate_reason_codes(result["reason_codes"], schema)
+    if unknown_reason_codes:
+        payload = build_error_payload(
+            snapshot=snapshot,
+            error_code="OUTPUT_SCHEMA_INVALID",
+            summary="Resultaat bevat reason codes die niet in het schema staan.",
+            errors=[f"Unknown reason code: {code}" for code in unknown_reason_codes],
+        )
+        return payload, 1
+
+    payload = build_payload(snapshot, result)
+    payload = maybe_create_paper_trade(snapshot, payload, paper_trades_log)
+    return payload, 0
+
+
 def main():
     parser = argparse.ArgumentParser(description="Run the Set & Forget primary decision engine.")
     parser.add_argument("--format", choices=["json", "text"], default="json")
@@ -570,36 +599,9 @@ def main():
     skill = load_json(args.skill_file)
     schema = load_json(args.schema_file)
     snapshot = load_json(args.snapshot_file)
-
-    snapshot_errors = validate_snapshot(snapshot, schema)
-    if snapshot_errors:
-        payload = build_error_payload(
-            snapshot=snapshot,
-            error_code="INPUT_SCHEMA_INVALID",
-            summary="Snapshot validatie tegen het Set & Forget schema is mislukt.",
-            errors=snapshot_errors
-        )
-        emit_payload(payload, args.format)
-        return 1
-
-    result = evaluate_rules(snapshot, skill)
-    result = maybe_apply_fxalex_confluence(snapshot, result, skill)
-    result = maybe_apply_news_context(snapshot, result, skill)
-    unknown_reason_codes = validate_reason_codes(result["reason_codes"], schema)
-    if unknown_reason_codes:
-        payload = build_error_payload(
-            snapshot=snapshot,
-            error_code="OUTPUT_SCHEMA_INVALID",
-            summary="Resultaat bevat reason codes die niet in het schema staan.",
-            errors=[f"Unknown reason code: {code}" for code in unknown_reason_codes]
-        )
-        emit_payload(payload, args.format)
-        return 1
-
-    payload = build_payload(snapshot, result)
-    payload = maybe_create_paper_trade(snapshot, payload, args.paper_trades_log)
+    payload, exit_code = run_decision_cycle(snapshot, skill, schema, args.paper_trades_log)
     emit_payload(payload, args.format)
-    return 0
+    return exit_code
 
 
 if __name__ == "__main__":
