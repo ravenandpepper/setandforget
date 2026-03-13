@@ -158,11 +158,17 @@ def main():
     assert trigger_only_result["post_body"]["market_data_fetch"]["adapter"] == market_data_fetch.TWELVEDATA_ADAPTER_KEY, (
         "Trigger-only webhook must use the real candle adapter"
     )
-    assert trigger_only_result["post_body"]["automation"]["payload"]["decision"] == "WAIT", (
-        "Trigger-only webhook must stay gated until objective context beyond candles is built"
+    assert trigger_only_result["post_body"]["market_data_fetch"]["fetch_context"]["derived_higher_trend"] == "bullish", (
+        "Trigger-only webhook must expose the derived higher timeframe trend"
     )
-    assert trigger_only_result["post_body"]["automation"]["run"]["paper_trade_created"] is False, (
-        "Trigger-only webhook must not create a paper trade while only conservative defaults exist"
+    assert trigger_only_result["post_body"]["automation"]["payload"]["decision"] == "BUY", (
+        "Trigger-only webhook must route the fetched candles plus derived context into the BUY flow"
+    )
+    assert "AOI_VALID" in trigger_only_result["post_body"]["automation"]["payload"]["reason_codes"], (
+        "Trigger-only webhook must preserve the explainable objective context in the final decision"
+    )
+    assert trigger_only_result["post_body"]["automation"]["run"]["paper_trade_created"] is True, (
+        "Trigger-only webhook must create a paper trade when the derived trigger-only setup is actionable"
     )
     assert trigger_only_result["post_body"]["automation"]["run"]["trigger"] == "tradingview_trigger_only", (
         "Trigger-only webhook must preserve the dedicated trigger label"
@@ -172,7 +178,7 @@ def main():
     print("- valid_post_routes_into_buy_decision: status=200 decision=BUY paper_trade_created=True")
     print("- invalid_post_returns_422: status=422 validation_failed=True")
     print("- candle_bundle_post_routes_into_market_structure_buy: status=200 decision=BUY paper_trade_created=True")
-    print("- trigger_only_post_fetches_real_candles_and_stays_gated: status=200 decision=WAIT paper_trade_created=False")
+    print("- trigger_only_post_fetches_real_candles_and_routes_into_buy: status=200 decision=BUY paper_trade_created=True")
 
 
 if __name__ == "__main__":

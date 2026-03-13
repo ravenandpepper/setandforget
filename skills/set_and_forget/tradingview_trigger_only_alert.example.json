@@ -5,7 +5,7 @@
   "alert_name": "set-and-forget-eurusd-4h-trigger",
   "ticker": "PEPPERSTONE:EURUSD",
   "exchange": "PEPPERSTONE",
-  "trigger_time": "2026-03-13T10:00:00Z",
+  "trigger_time": "2026-03-13T14:00:00Z",
   "timeframe": "240",
   "execution_mode": "paper",
   "fxalex_confluence_enabled": false,

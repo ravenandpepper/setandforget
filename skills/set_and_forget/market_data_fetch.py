@@ -1,12 +1,15 @@
 import copy
 import json
 import os
+from datetime import datetime, timezone
 from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
+from zoneinfo import ZoneInfo
 
 import market_data_ingest
+import market_structure
 import runtime_env
 
 
@@ -109,23 +112,143 @@ def normalize_provider_candle(candle: dict):
         raise ValueError(f"Invalid provider candle payload: {candle!r}") from error
 
 
-def build_conservative_risk_features(latest_h4_close: float | None):
-    payload = {
+def parse_iso_timestamp(value: str | None):
+    if not value:
+        return None
+    token = str(value).strip()
+    if not token:
+        return None
+    if token.endswith("Z"):
+        token = token[:-1] + "+00:00"
+    parsed = datetime.fromisoformat(token)
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(timezone.utc)
+
+
+def derive_session_window(reference_timestamp: str | None):
+    timestamp = parse_iso_timestamp(reference_timestamp)
+    if timestamp is None:
+        return "unknown"
+
+    london = timestamp.astimezone(ZoneInfo("Europe/London"))
+    new_york = timestamp.astimezone(ZoneInfo("America/New_York"))
+    if london.weekday() > 4 or new_york.weekday() > 4:
+        return "outside_overlap"
+
+    london_open = 8 <= london.hour < 17
+    new_york_open = 8 <= new_york.hour < 17
+    return "london_newyork_overlap" if london_open and new_york_open else "outside_overlap"
+
+
+def derive_planned_entry_price(candles: dict, higher_trend: str, weekly_state: dict, daily_state: dict, h4_state: dict):
+    if higher_trend not in {"bullish", "bearish"}:
+        return None
+
+    swing_high, swing_low = market_structure.determine_aoi_impulse_bounds(
+        weekly_state,
+        daily_state,
+        h4_state,
+        {
+            "weekly": {"candles": candles["weekly"]},
+            "daily": {"candles": candles["daily"]},
+            "h4": {"candles": candles["h4"]},
+        },
+    )
+    fib_zone = market_structure.compute_fib_zone(higher_trend, swing_high, swing_low)
+    if not fib_zone:
+        return None
+    zone_low, zone_high = fib_zone
+    return (zone_low + zone_high) / 2
+
+
+def derive_stop_and_target_prices(candles: dict, higher_trend: str, h4_state: dict, entry_price: float | None):
+    h4_candles = candles["h4"]
+    if not h4_candles or higher_trend not in {"bullish", "bearish"}:
+        return None
+
+    if entry_price is None:
+        entry_price = h4_candles[-1]["close"]
+    recent_h4 = h4_candles[-7:]
+    if higher_trend == "bullish":
+        stop_loss_price = h4_state.get("last_confirmed_low")
+        if stop_loss_price is None:
+            stop_loss_price = min(candle["low"] for candle in recent_h4)
+        risk_distance = entry_price - stop_loss_price
+        if risk_distance <= 0:
+            return None
+        take_profit_price = entry_price + (risk_distance * 2.0)
+        return {
+            "entry_price": entry_price,
+            "stop_loss_price": stop_loss_price,
+            "take_profit_price": take_profit_price,
+            "stop_loss_basis": "last_swing",
+            "risk_reward_ratio": 2.0,
+            "planned_risk_percent": 1.0,
+        }
+
+    stop_loss_price = h4_state.get("last_confirmed_high")
+    if stop_loss_price is None:
+        stop_loss_price = max(candle["high"] for candle in recent_h4)
+    risk_distance = stop_loss_price - entry_price
+    if risk_distance <= 0:
+        return None
+    take_profit_price = entry_price - (risk_distance * 2.0)
+    return {
+        "entry_price": entry_price,
+        "stop_loss_price": stop_loss_price,
+        "take_profit_price": take_profit_price,
+        "stop_loss_basis": "last_swing",
+        "risk_reward_ratio": 2.0,
+        "planned_risk_percent": 1.0,
+    }
+
+
+def build_default_risk_features(latest_h4_close: float | None):
+    risk_features = {
         "stop_loss_basis": "unknown",
         "risk_reward_ratio": 0.0,
         "planned_risk_percent": 0.0,
     }
     if latest_h4_close is not None:
-        payload["entry_price"] = latest_h4_close
-    return payload
+        risk_features["entry_price"] = latest_h4_close
+    return risk_features
 
 
-def build_conservative_operational_flags():
+def build_default_operational_flags(session_window: str):
     return {
         "open_trades_count": 0,
         "high_impact_news_imminent": False,
-        "session_window": "unknown",
+        "session_window": session_window,
         "set_and_forget_possible": False,
+    }
+
+
+def derive_objective_context_from_candles(candles: dict, request_payload: dict):
+    weekly_state = market_structure.analyze_timeframe_structure(candles["weekly"])
+    daily_state = market_structure.analyze_timeframe_structure(candles["daily"])
+    higher_trend = market_structure.infer_higher_trend(weekly_state, daily_state)
+    h4_state = market_structure.infer_h4_features(candles["h4"], higher_trend)
+    reference_timestamp = request_payload.get("trigger_time") or candles["h4"][-1]["timestamp"]
+    session_window = derive_session_window(reference_timestamp)
+    latest_h4_close = candles["h4"][-1]["close"] if candles["h4"] else None
+
+    risk_features = build_default_risk_features(latest_h4_close)
+    planned_entry_price = derive_planned_entry_price(candles, higher_trend, weekly_state, daily_state, h4_state)
+    derived_trade_plan = derive_stop_and_target_prices(candles, higher_trend, h4_state, planned_entry_price)
+    if derived_trade_plan is not None:
+        risk_features.update(derived_trade_plan)
+
+    operational_flags = build_default_operational_flags(session_window)
+    operational_flags["set_and_forget_possible"] = derived_trade_plan is not None
+
+    return {
+        "higher_trend": higher_trend,
+        "weekly_state": weekly_state,
+        "daily_state": daily_state,
+        "h4_state": h4_state,
+        "risk_features": risk_features,
+        "operational_flags": operational_flags,
     }
 
 
@@ -185,7 +308,7 @@ class TwelveDataTimeSeriesAdapter(MarketDataFetchAdapter):
                 outputsize=config["outputsize"],
             )
 
-        latest_h4_close = candles["h4"][-1]["close"] if candles["h4"] else None
+        objective_context = derive_objective_context_from_candles(candles, request_payload)
         return {
             "fetch_context": {
                 "provider": "twelvedata",
@@ -202,11 +325,13 @@ class TwelveDataTimeSeriesAdapter(MarketDataFetchAdapter):
                     "missing_required_env_vars": self.runtime_config["missing_required_env_vars"],
                     "files_loaded": self.env_state["files_loaded"],
                 },
-                "objective_context_mode": "conservative_defaults",
+                "objective_context_mode": "derived_from_candles",
+                "derived_higher_trend": objective_context["higher_trend"],
+                "derived_session_window": objective_context["operational_flags"]["session_window"],
             },
             "candles": candles,
-            "risk_features": build_conservative_risk_features(latest_h4_close),
-            "operational_flags": build_conservative_operational_flags(),
+            "risk_features": objective_context["risk_features"],
+            "operational_flags": objective_context["operational_flags"],
         }
 
     def fetch_time_series(self, provider_symbol: str, interval: str, outputsize: int):

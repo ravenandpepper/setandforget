@@ -168,14 +168,14 @@
         "ticker": "PEPPERSTONE:EURUSD",
         "exchange": "PEPPERSTONE",
         "timeframe": "240",
-        "trigger_time": "2026-03-13T10:00:00Z",
+        "trigger_time": "2026-03-13T14:00:00Z",
         "execution_mode": "paper",
         "fxalex_confluence_enabled": false,
         "news_context_enabled": false
       },
       "expected": {
-        "decision": "WAIT",
-        "paper_trade_created": false,
+        "decision": "BUY",
+        "paper_trade_created": true,
         "normalized_pair": "EURUSD",
         "normalized_execution_timeframe": "4H"
       }

@@ -57,11 +57,23 @@ def run_valid_case():
     assert result["ingest_payload"]["pair"] == "EURUSD", "pair should normalize to EURUSD"
     assert result["ingest_payload"]["execution_timeframe"] == "4H", "timeframe should normalize to 4H"
     assert len(result["ingest_payload"]["candles"]["h4"]) >= 7, "h4 candles must be present"
-    assert result["ingest_payload"]["risk_features"]["stop_loss_basis"] == "unknown", (
-        "real candle fetch should use conservative default risk context until a dedicated context source exists"
+    assert result["ingest_payload"]["risk_features"]["stop_loss_basis"] == "last_swing", (
+        "real candle fetch should derive a last-swing stop basis from the fetched candles"
     )
-    assert result["ingest_payload"]["operational_flags"]["set_and_forget_possible"] is False, (
-        "real candle fetch should keep execution gated by default"
+    assert result["ingest_payload"]["risk_features"]["risk_reward_ratio"] == 2.0, (
+        "real candle fetch should derive a baseline 1:2 risk/reward plan from candles"
+    )
+    assert result["ingest_payload"]["operational_flags"]["session_window"] == "london_newyork_overlap", (
+        "trigger timestamp during overlap should map to london_newyork_overlap"
+    )
+    assert result["ingest_payload"]["operational_flags"]["set_and_forget_possible"] is True, (
+        "derived candle-based trade plan should mark the setup as set-and-forget possible"
+    )
+    assert result["fetch_context"]["derived_higher_trend"] == "bullish", (
+        "fixture candles should derive a bullish higher timeframe trend"
+    )
+    assert result["fetch_context"]["derived_session_window"] == "london_newyork_overlap", (
+        "fetch context should expose the derived overlap session"
     )
     return {
         "id": "trigger_only_twelvedata_adapter_prepares_ingest_payload",
