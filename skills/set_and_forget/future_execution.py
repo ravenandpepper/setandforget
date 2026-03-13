@@ -168,6 +168,7 @@ def build_pepperstone_order_plan(snapshot: dict, payload: dict, order_intent: di
         order_intent=order_intent,
         execution_constraints=execution_constraints,
     )
+    request_blueprint = adapter_state["request_blueprint"]
     return {
         "adapter": "pepperstone_order_plan_stub",
         "delivery": "disabled",
@@ -178,18 +179,28 @@ def build_pepperstone_order_plan(snapshot: dict, payload: dict, order_intent: di
         "timeframe": order_intent["timeframe"],
         "execution_mode": order_intent["execution_mode"],
         "execution_constraints": execution_constraints,
-        "order_type": "to_be_selected_in_future_adapter",
+        "order_type": request_blueprint["order_type"],
         "order_intent": order_intent,
         "adapter_state": adapter_state,
         "client_scaffold": adapter_state["client_scaffold"],
         "levels": build_levels(snapshot),
         "risk": build_risk(snapshot, payload),
-        "broker_payload": {
-            "account": "paper_only",
-            "size_units": None,
-            "time_in_force": "to_be_defined",
-            "client_order_id": None,
-        },
+        "broker_payload": build_pepperstone_broker_payload(request_blueprint),
+    }
+
+
+def build_pepperstone_broker_payload(request_blueprint: dict):
+    return {
+        "account_id": request_blueprint["account_id"],
+        "instrument": request_blueprint["instrument"],
+        "side": request_blueprint["side"],
+        "order_type": request_blueprint["order_type"],
+        "size_units": request_blueprint["size_units"],
+        "time_in_force": request_blueprint["time_in_force"],
+        "planned_risk_percent": request_blueprint["planned_risk_percent"],
+        "stop_loss_price": request_blueprint["stop_loss_price"],
+        "take_profit_price": request_blueprint["take_profit_price"],
+        "client_order_id": None,
     }
 
 

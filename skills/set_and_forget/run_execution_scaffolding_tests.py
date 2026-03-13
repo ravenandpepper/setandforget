@@ -236,6 +236,15 @@ def assert_pepperstone_adapter_contract():
     assert blocked["policy_reason"] == "paper_only", (
         "Pepperstone adapter must report the active policy gate"
     )
+    assert blocked["request_blueprint"]["instrument"] == "EURUSD", (
+        "Pepperstone adapter must always expose the normalized request blueprint"
+    )
+    assert blocked["prepared_request"] is None, (
+        "Pepperstone adapter must not expose a prepared request while policy blocks transport"
+    )
+    assert blocked["validation_error"] is None, (
+        "Pepperstone adapter must keep validation_error empty while policy blocks transport"
+    )
 
     with patch.object(pepperstone_config.runtime_env, "env_file_candidates", return_value=[]):
         with patch.dict(os.environ, {}, clear=True):
@@ -250,6 +259,12 @@ def assert_pepperstone_adapter_contract():
             )
             assert missing_env["status"] == "missing_env", (
                 "Pepperstone adapter must report missing env when policy allows transport but config is absent"
+            )
+            assert missing_env["missing_required_env_vars"] == pepperstone_config.PEPPERSTONE_REQUIRED_ENV_VARS, (
+                "Pepperstone adapter must expose missing env vars in a stable field"
+            )
+            assert missing_env["transport"] == "null_pepperstone_transport", (
+                "Pepperstone adapter must expose the null transport consistently"
             )
 
     with patch.object(pepperstone_config.runtime_env, "env_file_candidates", return_value=[]):
@@ -287,6 +302,12 @@ def assert_pepperstone_adapter_contract():
             assert prepared["prepared_request"]["time_in_force"] == "gtc", (
                 "Pepperstone adapter must summarize the normalized time in force"
             )
+            assert prepared["request_blueprint"]["time_in_force"] == "gtc", (
+                "Pepperstone adapter must expose the normalized request blueprint directly"
+            )
+            assert prepared["validation_error"] is None, (
+                "Pepperstone adapter must leave validation_error empty for valid requests"
+            )
 
             invalid = pepperstone_adapter.evaluate_adapter(
                 base_dir=BASE_DIR,
@@ -299,6 +320,9 @@ def assert_pepperstone_adapter_contract():
             )
             assert invalid["status"] == "invalid_order_request", (
                 "Pepperstone adapter must reject invalid order intents"
+            )
+            assert invalid["validation_error"] is not None, (
+                "Pepperstone adapter must expose a stable validation error field for invalid requests"
             )
 
 
@@ -419,6 +443,9 @@ def run_prepared_case(case: dict, skill: dict, schema: dict):
     assert execution_state["pepperstone_order_plan"]["side"] == expected["side"], (
         f"{case['id']}: expected side {expected['side']}, got {execution_state['pepperstone_order_plan']['side']}"
     )
+    assert execution_state["pepperstone_order_plan"]["order_type"] == "market", (
+        f"{case['id']}: Pepperstone order plan must reuse the normalized order type"
+    )
     adapter_state = execution_state["pepperstone_order_plan"]["adapter_state"]
     assert adapter_state["adapter"] == "pepperstone_adapter_v1", (
         f"{case['id']}: Pepperstone adapter id mismatch"
@@ -454,6 +481,21 @@ def run_prepared_case(case: dict, skill: dict, schema: dict):
     assert client_scaffold["request_blueprint"]["time_in_force"] == "gtc", (
         f"{case['id']}: Pepperstone request blueprint must normalize time in force"
     )
+    assert adapter_state["request_blueprint"] == adapter_state["client_scaffold"]["request_blueprint"], (
+        f"{case['id']}: Pepperstone adapter must expose the normalized request blueprint as a top-level field"
+    )
+    assert adapter_state["transport"] == adapter_state["client_scaffold"]["transport"], (
+        f"{case['id']}: Pepperstone adapter must expose the normalized transport as a top-level field"
+    )
+    assert adapter_state["missing_required_env_vars"] == client_scaffold["missing_required_env_vars"], (
+        f"{case['id']}: Pepperstone adapter must expose missing env vars consistently"
+    )
+    assert adapter_state["order_intent_validation_errors"] == client_scaffold["order_intent_validation_errors"], (
+        f"{case['id']}: Pepperstone adapter must expose validation errors consistently"
+    )
+    assert adapter_state["validation_error"] is None, (
+        f"{case['id']}: Pepperstone adapter must keep validation_error empty while blocked by policy"
+    )
     assert adapter_state["client_scaffold"] == client_scaffold, (
         f"{case['id']}: Pepperstone adapter must expose the same client scaffold"
     )
@@ -462,6 +504,37 @@ def run_prepared_case(case: dict, skill: dict, schema: dict):
     )
     assert adapter_state["request_ready"] is False, (
         f"{case['id']}: Pepperstone adapter must not mark requests ready while policy blocks execution"
+    )
+    broker_payload = execution_state["pepperstone_order_plan"]["broker_payload"]
+    assert broker_payload["account_id"] == client_scaffold["request_blueprint"]["account_id"], (
+        f"{case['id']}: Pepperstone broker payload must reuse the normalized account reference"
+    )
+    assert broker_payload["instrument"] == client_scaffold["request_blueprint"]["instrument"], (
+        f"{case['id']}: Pepperstone broker payload must reuse the normalized instrument"
+    )
+    assert broker_payload["side"] == client_scaffold["request_blueprint"]["side"], (
+        f"{case['id']}: Pepperstone broker payload must reuse the normalized side"
+    )
+    assert broker_payload["order_type"] == client_scaffold["request_blueprint"]["order_type"], (
+        f"{case['id']}: Pepperstone broker payload must reuse the normalized order type"
+    )
+    assert broker_payload["size_units"] == client_scaffold["request_blueprint"]["size_units"], (
+        f"{case['id']}: Pepperstone broker payload must reuse the normalized size units"
+    )
+    assert broker_payload["time_in_force"] == client_scaffold["request_blueprint"]["time_in_force"], (
+        f"{case['id']}: Pepperstone broker payload must reuse the normalized time in force"
+    )
+    assert broker_payload["planned_risk_percent"] == client_scaffold["request_blueprint"]["planned_risk_percent"], (
+        f"{case['id']}: Pepperstone broker payload must reuse the normalized planned risk"
+    )
+    assert broker_payload["stop_loss_price"] == client_scaffold["request_blueprint"]["stop_loss_price"], (
+        f"{case['id']}: Pepperstone broker payload must reuse the normalized stop loss"
+    )
+    assert broker_payload["take_profit_price"] == client_scaffold["request_blueprint"]["take_profit_price"], (
+        f"{case['id']}: Pepperstone broker payload must reuse the normalized take profit"
+    )
+    assert broker_payload["client_order_id"] is None, (
+        f"{case['id']}: Pepperstone broker payload must keep client_order_id unset"
     )
     assert execution_state["order_intent"]["side"] == expected["side"], (
         f"{case['id']}: order_intent side mismatch"
