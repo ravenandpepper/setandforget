@@ -1,0 +1,76 @@
+{
+  "cases": [
+    {
+      "id": "safe_budget_spreads_eight_pairs_over_four_minutes",
+      "input": {
+        "pairs": [
+          "EURUSD",
+          "GBPUSD",
+          "USDJPY",
+          "AUDUSD",
+          "NZDUSD",
+          "USDCAD",
+          "USDCHF",
+          "EURGBP"
+        ],
+        "trigger_time": "2026-03-16T08:00:42Z",
+        "execution_timeframe": "4H",
+        "execution_mode": "paper",
+        "max_requests_per_minute": 6,
+        "minute_spacing": 1
+      },
+      "expected": {
+        "pairs_per_minute": 2,
+        "effective_requests_per_minute": 6,
+        "unused_requests_per_minute": 0,
+        "bucket_count": 4,
+        "first_bucket_pairs": [
+          "EURUSD",
+          "GBPUSD"
+        ],
+        "last_bucket_time": "2026-03-16T08:03:00Z"
+      }
+    },
+    {
+      "id": "exact_eight_credit_budget_keeps_same_pair_throughput",
+      "input": {
+        "pairs": [
+          "OANDA:EURUSD",
+          "eurusd",
+          "GBPUSD",
+          "USDJPY"
+        ],
+        "trigger_time": "2026-03-16T08:00:00Z",
+        "execution_timeframe": "240",
+        "execution_mode": "paper",
+        "max_requests_per_minute": 8,
+        "minute_spacing": 1
+      },
+      "expected": {
+        "normalized_pairs": [
+          "EURUSD",
+          "GBPUSD",
+          "USDJPY"
+        ],
+        "pairs_per_minute": 2,
+        "effective_requests_per_minute": 6,
+        "unused_requests_per_minute": 2,
+        "bucket_count": 2
+      }
+    },
+    {
+      "id": "too_small_budget_fails_fast",
+      "input": {
+        "pairs": [
+          "EURUSD"
+        ],
+        "trigger_time": "2026-03-16T08:00:00Z",
+        "execution_timeframe": "4H",
+        "execution_mode": "paper",
+        "max_requests_per_minute": 2,
+        "minute_spacing": 1
+      },
+      "expected_error": "Need at least 3 requests per minute."
+    }
+  ]
+}
