@@ -53,7 +53,15 @@ def build_smoke_report(snapshot_path: Path):
     news_state = with_news["advisory_layers"]["news_context"]
 
     error_details = {}
-    for key in ["error_type", "error_message", "http_status", "error_body", "env_sources_checked"]:
+    for key in [
+        "error_type",
+        "error_message",
+        "http_status",
+        "error_body",
+        "env_source_order",
+        "env_sources_checked",
+        "env_files_loaded",
+    ]:
         if key in news_state:
             error_details[key] = news_state[key]
 

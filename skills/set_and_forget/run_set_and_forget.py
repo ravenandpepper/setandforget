@@ -3,6 +3,7 @@ import importlib.util
 import json
 import sys
 from pathlib import Path
+import future_execution
 import news_context
 import paper_trading
 
@@ -558,6 +559,11 @@ def maybe_create_paper_trade(snapshot: dict, payload: dict, log_path: Path):
     return payload
 
 
+def attach_future_execution(snapshot: dict, payload: dict):
+    payload["future_execution"] = future_execution.build_execution_scaffold(snapshot, payload)
+    return payload
+
+
 def run_decision_cycle(snapshot: dict, skill: dict, schema: dict, paper_trades_log: Path = PAPER_TRADES_LOG_FILE):
     snapshot_errors = validate_snapshot(snapshot, schema)
     if snapshot_errors:
@@ -583,6 +589,7 @@ def run_decision_cycle(snapshot: dict, skill: dict, schema: dict, paper_trades_l
         return payload, 1
 
     payload = build_payload(snapshot, result)
+    payload = attach_future_execution(snapshot, payload)
     payload = maybe_create_paper_trade(snapshot, payload, paper_trades_log)
     return payload, 0
 

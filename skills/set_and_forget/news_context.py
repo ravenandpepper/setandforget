@@ -5,6 +5,8 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
+import runtime_env
+
 
 BRAVE_SEARCH_ENDPOINT = "https://api.search.brave.com/res/v1/web/search"
 
@@ -60,38 +62,6 @@ VOLATILITY_KEYWORDS = [
     "risk-off",
     "flash crash",
 ]
-
-
-def env_candidates(base_dir: Path):
-    workspace_root = base_dir.parent.parent
-    return [
-        workspace_root / ".env",
-        base_dir / ".env",
-        Path.home() / ".config" / "openclaw" / "gateway.env",
-    ]
-
-
-def load_env_file(path: Path):
-    if not path.exists():
-        return
-
-    with open(path, "r", encoding="utf-8") as handle:
-        for raw_line in handle:
-            line = raw_line.strip()
-            if not line or line.startswith("#") or "=" not in line:
-                continue
-            key, value = line.split("=", 1)
-            os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
-
-
-def load_env_context(base_dir: Path):
-    seen = set()
-    for candidate in env_candidates(base_dir):
-        candidate = candidate.expanduser()
-        if candidate in seen:
-            continue
-        seen.add(candidate)
-        load_env_file(candidate)
 
 
 def describe_api_error(error: Exception):
@@ -201,7 +171,7 @@ def evaluate_news_context(snapshot: dict, config: dict, base_dir: Path):
             "confidence_penalty": 0,
         }
 
-    load_env_context(base_dir)
+    env_state = runtime_env.load_standardized_env(base_dir)
     query = build_query(snapshot["pair"])
     api_key = os.environ.get("BRAVE_SEARCH_API_KEY")
     if not api_key:
@@ -216,7 +186,9 @@ def evaluate_news_context(snapshot: dict, config: dict, base_dir: Path):
             "should_wait": False,
             "confidence_penalty": 0,
             "query": query,
-            "env_sources_checked": [str(path) for path in env_candidates(base_dir)],
+            "env_source_order": env_state["source_order"],
+            "env_sources_checked": env_state["files_checked"],
+            "env_files_loaded": env_state["files_loaded"],
         }
 
     try:

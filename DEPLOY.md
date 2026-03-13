@@ -77,6 +77,10 @@ ssh traderops@38.242.214.188 'cd /home/traderops/setandforget && python3 skills/
 - Do not store secrets in git
 - Keep VPS secrets in `~/.config/openclaw/gateway.env`
 - Project code is deployed from git; runtime config stays on the VPS
+- Reserved Pepperstone env vars for future adapter prep:
+  `PEPPERSTONE_ENVIRONMENT`, `PEPPERSTONE_ACCOUNT_ID`, `PEPPERSTONE_API_KEY`, `PEPPERSTONE_API_SECRET`
+- Optional Pepperstone override:
+  `PEPPERSTONE_API_BASE_URL`
 
 ## Notes
 - The VPS deployed folder is a checked-out worktree, not the bare git repo itself
