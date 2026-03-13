@@ -20,6 +20,15 @@ DEFAULT_ADAPTER_KEY = TWELVEDATA_ADAPTER_KEY
 TWELVEDATA_REQUIRED_ENV_VARS = ["TWELVEDATA_API_KEY"]
 TWELVEDATA_OPTIONAL_ENV_VARS = ["TWELVEDATA_BASE_URL", "MARKET_DATA_FETCH_ADAPTER"]
 TWELVEDATA_DEFAULT_BASE_URL = "https://api.twelvedata.com"
+DEFAULT_HTTP_HEADERS = {
+    "Accept": "application/json",
+    # Twelve Data currently rejects the default Python urllib signature via Cloudflare.
+    "User-Agent": (
+        "Mozilla/5.0 (X11; Linux x86_64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/122.0.0.0 Safari/537.36"
+    ),
+}
 TWELVEDATA_TIMEFRAMES = {
     "weekly": {"provider_interval": "1week", "outputsize": 12},
     "daily": {"provider_interval": "1day", "outputsize": 20},
@@ -33,7 +42,10 @@ def load_json(path: Path):
 
 
 def perform_http_get_json(url: str, headers: dict | None = None):
-    request = Request(url, headers=headers or {})
+    request_headers = dict(DEFAULT_HTTP_HEADERS)
+    if headers:
+        request_headers.update(headers)
+    request = Request(url, headers=request_headers)
     try:
         with urlopen(request, timeout=15) as response:
             raw_body = response.read().decode("utf-8")
@@ -208,7 +220,7 @@ class TwelveDataTimeSeriesAdapter(MarketDataFetchAdapter):
             "apikey": self.api_key,
         }
         url = f"{self.base_url}/time_series?{urlencode(params)}"
-        payload = self.http_get_json(url, headers={"Accept": "application/json"})
+        payload = self.http_get_json(url)
 
         if payload.get("status") == "error":
             raise ValueError(payload.get("message", "Twelve Data returned an error."))
