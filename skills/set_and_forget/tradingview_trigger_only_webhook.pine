@@ -1,0 +1,60 @@
+//@version=6
+indicator("Set & Forget Trigger Only Webhook", overlay=true)
+
+executionMode = input.string("paper", "Execution mode", options=["paper", "advisory"])
+fxalexConfluenceEnabled = input.bool(false, "Enable fxalex confluence")
+newsContextEnabled = input.bool(false, "Enable news context")
+showTrendPanel = input.bool(true, "Show trend panel")
+
+buildPayload() =>
+    payload = "{"
+    payload += "\"source\":\"tradingview\","
+    payload += "\"message_version\":\"tv_webhook_v1\","
+    payload += "\"payload_kind\":\"trigger_only\","
+    payload += "\"alert_name\":\"set-and-forget-" + syminfo.ticker + "-4H-trigger\","
+    payload += "\"ticker\":\"" + syminfo.tickerid + "\","
+    payload += "\"exchange\":\"" + syminfo.prefix + "\","
+    payload += "\"trigger_time\":\"" + str.tostring(time) + "\","
+    payload += "\"timeframe\":\"240\","
+    payload += "\"execution_mode\":\"" + executionMode + "\","
+    payload += "\"fxalex_confluence_enabled\":" + (fxalexConfluenceEnabled ? "true" : "false") + ","
+    payload += "\"news_context_enabled\":" + (newsContextEnabled ? "true" : "false")
+    payload += "}"
+    payload
+
+lastClosedTrend(tf) =>
+    tfOpen = request.security(syminfo.tickerid, tf, open[1], lookahead=barmerge.lookahead_off)
+    tfClose = request.security(syminfo.tickerid, tf, close[1], lookahead=barmerge.lookahead_off)
+    tfClose > tfOpen ? "Bullish" : tfClose < tfOpen ? "Bearish" : "Neutral"
+
+trendColor(trend) =>
+    trend == "Bullish" ? color.new(color.green, 0) : trend == "Bearish" ? color.new(color.red, 0) : color.new(color.gray, 0)
+
+chartTrend = timeframe.isweekly ? lastClosedTrend("W") : timeframe.isdaily ? lastClosedTrend("D") : na
+chartTrendText = timeframe.isweekly or timeframe.isdaily ? chartTrend : "Open D or W"
+chartTrendColor = chartTrend == "Bullish" ? color.new(color.green, 0) : chartTrend == "Bearish" ? color.new(color.red, 0) : color.new(color.gray, 0)
+
+var table trendPanel = table.new(position.top_right, 1, 1, border_width=1, frame_color=color.new(color.gray, 60))
+
+if barstate.islast and showTrendPanel
+    table.cell(trendPanel, 0, 0, chartTrendText, bgcolor=chartTrendColor, text_color=color.white)
+
+if barstate.islast and not showTrendPanel
+    table.clear(trendPanel, 0, 0, 0, 0)
+
+is4HChart = timeframe.isintraday and timeframe.multiplier == 240
+shouldAlert = is4HChart and barstate.isconfirmed
+show4HMarker = is4HChart and barstate.islast
+
+if shouldAlert
+    alert(buildPayload(), alert.freq_once_per_bar_close)
+
+plot(na, title="4H trigger ready", display=display.none)
+plotshape(
+     show4HMarker ? high : na,
+     title="4H alert armed",
+     style=shape.circle,
+     location=location.absolute,
+     color=color.new(color.aqua, 0),
+     size=size.tiny
+ )

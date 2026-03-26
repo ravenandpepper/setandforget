@@ -62,7 +62,76 @@ Gebruik als startpunt:
 - [tradingview_alert.example.json](/Users/jeroenderaaf/Sites/setandforget/skills/set_and_forget/tradingview_alert.example.json)
 - [tradingview_candle_alert.example.json](/Users/jeroenderaaf/Sites/setandforget/skills/set_and_forget/tradingview_candle_alert.example.json)
 - [tradingview_candle_alert_message_template.txt](/Users/jeroenderaaf/Sites/setandforget/skills/set_and_forget/tradingview_candle_alert_message_template.txt)
+- [tradingview_trigger_only_alert.example.json](/Users/jeroenderaaf/Sites/setandforget/skills/set_and_forget/tradingview_trigger_only_alert.example.json)
+- [tradingview_trigger_only_alert_message_template.txt](/Users/jeroenderaaf/Sites/setandforget/skills/set_and_forget/tradingview_trigger_only_alert_message_template.txt)
+- [tradingview_trigger_only_webhook.pine](/Users/jeroenderaaf/Sites/setandforget/skills/set_and_forget/tradingview_trigger_only_webhook.pine)
 - [tradingview_candle_bundle_alert.pine](/Users/jeroenderaaf/Sites/setandforget/skills/set_and_forget/tradingview_candle_bundle_alert.pine)
+
+## Trigger-only alert setup
+
+Voor de publiek bereikbare VPS-route is nu juist de `trigger_only` flow het beoogde startpunt:
+
+1. Open in TradingView de chart waarop je de alert wilt laten afgaan.
+2. Maak een alert op candle close voor je bestaande triggerconditie.
+3. Zet de webhook URL op je actieve geheime VPS endpoint, bijvoorbeeld:
+   - `http://38.242.214.188/webhooks/tradingview/REPLACE_WITH_LONG_RANDOM_TOKEN/trigger-only`
+4. Plak als alert message de template uit:
+   - [tradingview_trigger_only_alert_message_template.txt](/Users/jeroenderaaf/Sites/setandforget/skills/set_and_forget/tradingview_trigger_only_alert_message_template.txt)
+5. Gebruik deze route alleen voor paper trading of advisory mode.
+
+Belangrijke nuances:
+
+- de server canonicaliseert `pair` uit `{{ticker}}`, dus `PEPPERSTONE:EURUSD` wordt intern `EURUSD`
+- `{{interval}}` mag `240` zijn; de ingest normaliseert dat intern naar `4H`
+- een externe handmatige `curl` vanaf je eigen IP mag op deze publieke route `403 Forbidden` geven; dat bevestigt juist de nginx allowlist
+
+## Trigger-only Pine startpunt
+
+Voor de TradingView-native trigger-only route staat nu ook een Pine script klaar:
+
+- [tradingview_trigger_only_webhook.pine](/Users/jeroenderaaf/Sites/setandforget/skills/set_and_forget/tradingview_trigger_only_webhook.pine)
+
+Wat dit script doet:
+
+- draait bedoeld op een `4H` chart
+- verstuurt de `trigger_only` webhook payload via `alert()` op candle close
+- toont op `W`- en `D`-charts rechtsboven alleen een eenvoudige objectieve trendstatus: `Bullish`, `Bearish` of `Neutral`
+- toont op de `4H` chart een subtiele marker zodat je ziet dat de alert-context actief is zonder een apart blauw paneel
+
+De trendbox gebruikt bewust een eenvoudige, explainable definitie:
+
+- `Bullish`: laatst gesloten candle close > open
+- `Bearish`: laatst gesloten candle close < open
+- `Neutral`: laatst gesloten candle close = open
+
+Deze box verandert niets aan de server-side beslislogica. Hij is alleen bedoeld om je zondagselectie en chart-screening sneller te maken.
+
+Gebruik in TradingView voor deze Pine-variant:
+
+1. Voeg de indicator toe aan de chart.
+2. Maak een alert op `Any alert() function call`.
+3. Zet als webhook URL je VPS endpoint.
+4. Laat het alert message veld leeg, omdat `alert()` zelf de JSON payload bouwt.
+
+## Eerste live test
+
+Na het opslaan van de TradingView alert is de kleinste productietest:
+
+1. Verstuur één echte alert vanuit TradingView naar de publieke `trigger-only` route.
+2. Controleer direct daarna op de VPS:
+   - `journalctl --user -u setandforget-tradingview-webhook.service -n 50 --no-pager`
+3. Verwachte webhook-uitkomst bij succes:
+   - HTTP `200`
+   - response `status: "processed"`
+   - `market_data_fetch.status: "prepared"`
+   - `automation.run.trigger: "tradingview_trigger_only"`
+4. Bij een niet-geldige payload verwacht je geen `403`, maar een applicatie-response zoals `400` of `422`.
+
+Aanvullende controlepunten:
+
+- als inference vanuit de huidige service-unit en Python defaults: paper trades landen normaal in `/home/traderops/setandforget/skills/set_and_forget/paper_trades_log.jsonl`
+- als inference vanuit dezelfde defaults: automation-beslissingen landen normaal in `/home/traderops/setandforget/skills/set_and_forget/automation_decisions_log.jsonl`
+- de trigger-only flow blijft server-side candles ophalen; TradingView is dus alleen de triggerbron, niet de bron van strategielogica
 
 ## Candle bundle template
 

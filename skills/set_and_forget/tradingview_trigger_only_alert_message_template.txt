@@ -1,0 +1,14 @@
+{
+  "source": "tradingview",
+  "message_version": "tv_webhook_v1",
+  "payload_kind": "trigger_only",
+  "alert_name": "set-and-forget-{{ticker}}-{{interval}}-trigger",
+  "pair": "{{ticker}}",
+  "ticker": "{{ticker}}",
+  "exchange": "{{exchange}}",
+  "trigger_time": "{{time}}",
+  "execution_timeframe": "{{interval}}",
+  "execution_mode": "paper",
+  "fxalex_confluence_enabled": false,
+  "news_context_enabled": false
+}

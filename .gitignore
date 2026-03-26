@@ -1,6 +1,8 @@
 .DS_Store
 __pycache__/
 *.pyc
+.env
+.env.*
 
 skills/set_and_forget/paper_trades_log.jsonl
 skills/set_and_forget/automation_decisions_log.jsonl
