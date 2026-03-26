@@ -1,0 +1,26 @@
+    # setandforget tournament dashboard begin
+    location = /tournament {
+        return 301 /tournament/;
+    }
+
+    location = /tournament/ {
+        alias /home/traderops/setandforget/skills/set_and_forget/tournament_dashboard.html;
+        add_header Cache-Control "no-store, max-age=0";
+    }
+
+    location = /tournament/tournament_dashboard.css {
+        alias /home/traderops/setandforget/skills/set_and_forget/tournament_dashboard.css;
+        add_header Cache-Control "no-store, max-age=0";
+    }
+
+    location = /tournament/tournament_dashboard.js {
+        alias /home/traderops/setandforget/skills/set_and_forget/tournament_dashboard.js;
+        add_header Cache-Control "no-store, max-age=0";
+    }
+
+    location = /tournament/openclaw_tournament_dashboard_view_model.json {
+        alias /home/traderops/setandforget/skills/set_and_forget/openclaw_tournament_dashboard_view_model.json;
+        default_type application/json;
+        add_header Cache-Control "no-store, max-age=0";
+    }
+    # setandforget tournament dashboard end

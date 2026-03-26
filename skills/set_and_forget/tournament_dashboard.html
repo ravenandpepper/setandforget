@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Set & Forget Tournament Dashboard</title>
+    <link rel="stylesheet" href="./tournament_dashboard.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <div class="backdrop backdrop-a"></div>
+      <div class="backdrop backdrop-b"></div>
+      <div class="grid-noise"></div>
+
+      <header class="hero">
+        <div class="hero-copy">
+          <div class="eyebrow">Set &amp; Forget Tournament Control Room</div>
+          <h1>Paper-only tournament telemetry with hard gates still in charge.</h1>
+          <p class="hero-summary">
+            Baseline policy stays leading. Models compete on paper outcomes, contract reliability, and alignment quality.
+          </p>
+          <div class="hero-badges">
+            <span class="hero-badge">Set &amp; Forget hard gates lead</span>
+            <span class="hero-badge">fxalex advisory only</span>
+            <span class="hero-badge">No live execution</span>
+          </div>
+        </div>
+        <div class="hero-status panel">
+          <div class="panel-label">Dashboard Feed</div>
+          <div id="data-source" class="data-source">Loading view model...</div>
+          <div id="generated-at" class="generated-at">Waiting for dataset</div>
+          <div id="overview-cards" class="overview-cards"></div>
+        </div>
+      </header>
+
+      <main class="dashboard-layout">
+        <section class="panel panel-chart">
+          <div class="panel-head">
+            <div>
+              <div class="section-kicker">Equity Theatre</div>
+              <h2>Equity Curves</h2>
+            </div>
+            <p class="panel-copy">
+              Realized R accumulation per model over tournament history. The visual goal is fast baseline-vs-model intuition.
+            </p>
+          </div>
+          <div id="equity-legend" class="equity-legend"></div>
+          <div id="equity-chart" class="chart-slot"></div>
+        </section>
+
+        <section class="stack">
+          <section class="panel">
+            <div class="panel-head compact">
+              <div>
+                <div class="section-kicker">Leaderboard</div>
+                <h2>Model Standing</h2>
+              </div>
+            </div>
+            <div id="leaderboard-grid" class="leaderboard-grid"></div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-head compact">
+              <div>
+                <div class="section-kicker">Comparison Bars</div>
+                <h2>Performance Snapshot</h2>
+              </div>
+            </div>
+            <div id="performance-bars" class="performance-bars"></div>
+          </section>
+        </section>
+
+        <section class="panel panel-wide">
+          <div class="panel-head">
+            <div>
+              <div class="section-kicker">Decision Pulse</div>
+              <h2>Recent Decisions</h2>
+            </div>
+            <p class="panel-copy">
+              Latest model calls with confidence, baseline alignment, and contract-status context.
+            </p>
+          </div>
+          <div id="recent-decisions" class="recent-decisions"></div>
+        </section>
+      </main>
+    </div>
+
+    <script src="./tournament_dashboard.js"></script>
+  </body>
+</html>
