@@ -31,6 +31,14 @@ def load_jsonl(path: Path):
     return rows
 
 
+def build_fake_runner(outputs_by_model_id: dict):
+    def runner(model: dict, evaluation_payload: dict, primary_payload: dict, decision_schema: dict):
+        del evaluation_payload, primary_payload, decision_schema
+        return outputs_by_model_id[model["model_id"]]
+
+    return runner
+
+
 def run_completed_case():
     feature_payload = load_json(FEATURE_SNAPSHOT_FILE)
     feature_schema = load_json(FEATURE_SCHEMA_FILE)
@@ -42,6 +50,34 @@ def run_completed_case():
     with tempfile.TemporaryDirectory() as tmpdir:
         tmp_path = Path(tmpdir)
         tournament_log = tmp_path / "openclaw_tournament_log.jsonl"
+        fake_runner = build_fake_runner(
+            {
+                "openrouter/anthropic/claude-opus-4.6": {
+                    "decision": "BUY",
+                    "confidence_score": 66,
+                    "reason_codes": ["HIGHER_TF_ALIGNED", "TREND_CONTINUATION"],
+                    "summary": "Claude Opus sees continuation alignment across the objective snapshot.",
+                },
+                "openrouter/anthropic/claude-sonnet-4.6": {
+                    "decision": "BUY",
+                    "confidence_score": 61,
+                    "reason_codes": ["HIGHER_TF_ALIGNED", "DAILY_TREND_CONFIRMED"],
+                    "summary": "Claude Sonnet confirms the bullish continuation setup.",
+                },
+                "openrouter/minimax/minimax-m1": {
+                    "decision": "BUY",
+                    "confidence_score": 59,
+                    "reason_codes": ["HIGHER_TF_ALIGNED", "RR_VALID"],
+                    "summary": "Minimax accepts the setup with sufficient reward-to-risk.",
+                },
+                "openrouter/moonshotai/kimi-k2": {
+                    "decision": "WAIT",
+                    "confidence_score": 41,
+                    "reason_codes": ["PULLBACK_NOT_CONFIRMED"],
+                    "summary": "Kimi waits for a cleaner continuation trigger.",
+                },
+            }
+        )
         result, exit_code = openclaw_tournament.run_tournament(
             feature_snapshot=feature_payload,
             feature_schema=feature_schema,
@@ -52,6 +88,7 @@ def run_completed_case():
             runs_dir=tmp_path / "openclaw_tournament_runs",
             tournament_log=tournament_log,
             run_label="test",
+            model_decision_runner=fake_runner,
         )
 
         assert exit_code == 0, "expected completed tournament run"
@@ -85,6 +122,34 @@ def run_hard_gate_case():
 
     with tempfile.TemporaryDirectory() as tmpdir:
         tmp_path = Path(tmpdir)
+        fake_runner = build_fake_runner(
+            {
+                "openrouter/anthropic/claude-opus-4.6": {
+                    "decision": "SELL",
+                    "confidence_score": 42,
+                    "reason_codes": ["HIGHER_TF_ALIGNED"],
+                    "summary": "Claude Opus deliberately probes a contrarian outcome.",
+                },
+                "openrouter/anthropic/claude-sonnet-4.6": {
+                    "decision": "BUY",
+                    "confidence_score": 55,
+                    "reason_codes": ["HIGHER_TF_ALIGNED", "TREND_CONTINUATION"],
+                    "summary": "Claude Sonnet stays aligned with the primary trend case.",
+                },
+                "openrouter/minimax/minimax-m1": {
+                    "decision": "BUY",
+                    "confidence_score": 51,
+                    "reason_codes": ["HIGHER_TF_ALIGNED", "RR_VALID"],
+                    "summary": "Minimax would still buy without the primary hard gate.",
+                },
+                "openrouter/moonshotai/kimi-k2": {
+                    "decision": "WAIT",
+                    "confidence_score": 37,
+                    "reason_codes": ["OPEN_TRADES_LIMIT_REACHED"],
+                    "summary": "Kimi also waits when the trade budget is exhausted.",
+                },
+            }
+        )
         result, exit_code = openclaw_tournament.run_tournament(
             feature_snapshot=feature_payload,
             feature_schema=feature_schema,
@@ -95,22 +160,27 @@ def run_hard_gate_case():
             runs_dir=tmp_path / "openclaw_tournament_runs",
             tournament_log=tmp_path / "openclaw_tournament_log.jsonl",
             run_label="hard-gate",
+            model_decision_runner=fake_runner,
         )
 
         assert exit_code == 0, "hard gate case should still complete"
         assert result["primary_payload"]["decision"] == "WAIT", "primary baseline should block on open trade limit"
 
-        trend_only_entry = next(entry for entry in result["entries"] if entry["adapter"] == "stub_trend_only")
-        contrarian_entry = next(entry for entry in result["entries"] if entry["adapter"] == "stub_counter_trend_probe")
-        assert trend_only_entry["decision"] == "WAIT", "trend-only model must stay blocked by primary WAIT"
-        assert trend_only_entry["policy_enforced"] is True, "trend-only model should be clamped by hard gate policy"
-        assert contrarian_entry["decision"] == "WAIT", "contrarian model must stay blocked by primary WAIT"
-        assert contrarian_entry["policy_enforced"] is True, "contrarian model should also be clamped by hard gate policy"
+        minimax_entry = next(
+            entry for entry in result["entries"] if entry["model_id"] == "openrouter/minimax/minimax-m1"
+        )
+        opus_entry = next(
+            entry for entry in result["entries"] if entry["model_id"] == "openrouter/anthropic/claude-opus-4.6"
+        )
+        assert minimax_entry["decision"] == "WAIT", "Minimax must stay blocked by primary WAIT"
+        assert minimax_entry["policy_enforced"] is True, "Minimax should be clamped by the hard gate policy"
+        assert opus_entry["decision"] == "WAIT", "Opus must stay blocked by primary WAIT"
+        assert opus_entry["policy_enforced"] is True, "Opus should also be clamped by the hard gate policy"
 
     return {
         "id": "primary_hard_gates_remain_non_overridable",
         "primary_decision": "WAIT",
-        "policy_enforced_model": "stub_trend_only",
+        "policy_enforced_model": "openrouter/minimax/minimax-m1",
     }
 
 

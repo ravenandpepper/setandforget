@@ -1,21 +1,21 @@
 {
-  "tournament_id": "openclaw_shadow_models_v1",
+  "tournament_id": "openclaw_openrouter_models_v1",
   "models": [
     {
-      "model_id": "claude_opus_shadow",
-      "adapter": "stub_primary_mirror"
+      "model_id": "openrouter/anthropic/claude-opus-4.6",
+      "adapter": "openclaw_gateway_agent"
     },
     {
-      "model_id": "gemini_shadow",
-      "adapter": "stub_trend_only"
+      "model_id": "openrouter/anthropic/claude-sonnet-4.6",
+      "adapter": "openclaw_gateway_agent"
     },
     {
-      "model_id": "minimax_shadow",
-      "adapter": "stub_risk_guard"
+      "model_id": "openrouter/minimax/minimax-m1",
+      "adapter": "openclaw_gateway_agent"
     },
     {
-      "model_id": "gpt_shadow",
-      "adapter": "stub_counter_trend_probe"
+      "model_id": "openrouter/moonshotai/kimi-k2",
+      "adapter": "openclaw_gateway_agent"
     }
   ]
 }

@@ -125,10 +125,14 @@ Concreet betekent dat:
 
 Zonder deze stap is een leaderboard of dashboard nog niet betrouwbaar.
 
-## Eerste implementatie in deze repo
+## Huidige implementatie in deze repo
 
-De eerste concrete repo-iteratie gebruikt nog geen echte modelproviders.
-In plaats daarvan staat er nu een lokale shadow tournament-laag klaar met stub adapters, zodat het contract en de logging eerst stabiel worden.
+De tournament-runner gebruikt nu echte OpenClaw agent-calls voor vier OpenRouter-modellen:
+
+- Minimax M1
+- Claude Sonnet 4.6
+- Claude Opus 4.6
+- Kimi K2
 
 Bestanden:
 
@@ -137,16 +141,14 @@ Bestanden:
 - [openclaw_tournament_models.example.json](/Users/jeroenderaaf/Sites/setandforget/skills/set_and_forget/openclaw_tournament_models.example.json)
 - [run_openclaw_tournament_tests.py](/Users/jeroenderaaf/Sites/setandforget/skills/set_and_forget/run_openclaw_tournament_tests.py)
 
-Wat deze eerste iteratie bewust wel doet:
+Wat deze iteratie bewust wel doet:
 
-- exact dezelfde `feature_snapshot` naar meerdere shadow models sturen
+- exact dezelfde `feature_snapshot` naar meerdere OpenClaw/OpenRouter models sturen
 - primary Set & Forget baseline naast alle model-uitkomsten loggen
 - hard gates van de primary engine non-overridable houden
 - append-only tournament logging wegschrijven
 
-Wat deze eerste iteratie bewust nog niet doet:
+Wat deze iteratie bewust nog niet doet:
 
-- echte OpenClaw gateway-calls
-- echte provider-koppelingen naar Claude, Gemini, Minimax of andere modellen
 - scoring op gerealiseerde PnL
 - dashboard rendering

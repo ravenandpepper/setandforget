@@ -1,10 +1,16 @@
 import argparse
 import json
+import os
+import re
+import shlex
+import shutil
+import subprocess
 from datetime import UTC, datetime
 from pathlib import Path
 
 import feature_snapshot as feature_snapshot_module
 import run_set_and_forget as engine
+import runtime_env
 
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -17,6 +23,9 @@ OUTPUT_SCHEMA_FILE = BASE_DIR / "openclaw_tournament_output_schema.json"
 TOURNAMENT_RUNS_DIR = BASE_DIR / "openclaw_tournament_runs"
 TOURNAMENT_LOG_FILE = BASE_DIR / "openclaw_tournament_log.jsonl"
 ALLOWED_DECISIONS = {"BUY", "SELL", "WAIT", "NO-GO"}
+DEFAULT_OPENCLAW_COMMAND = "openclaw"
+DEFAULT_OPENCLAW_TIMEOUT_SECONDS = 180
+DEFAULT_OPENCLAW_AGENT_PREFIX = "setandforget_tournament"
 
 
 def load_json(path: Path):
@@ -136,101 +145,231 @@ def build_primary_payload(feature_snapshot: dict, skill: dict, decision_schema: 
     return engine.build_payload(projected_snapshot, result), 0
 
 
-def build_stub_decision(adapter: str, evaluation_payload: dict, primary_payload: dict):
-    snapshot = evaluation_payload["feature_snapshot"]
-    meta = snapshot["meta"]
-    weekly = snapshot["timeframe_features"]["weekly"]["trend"]
-    daily = snapshot["timeframe_features"]["daily"]["trend"]
-    risk = snapshot["risk_features"]
-    operational = snapshot["operational_flags"]
+def slugify(value: str):
+    normalized = re.sub(r"[^a-zA-Z0-9]+", "_", value).strip("_").lower()
+    return normalized or "model"
 
-    if adapter == "stub_primary_mirror":
-        return {
-            "decision": primary_payload["decision"],
-            "confidence_score": primary_payload["confidence_score"],
-            "reason_codes": list(primary_payload["reason_codes"]),
-            "summary": "Stub mirrors the primary Set & Forget baseline.",
-        }
 
-    if adapter == "stub_trend_only":
-        if weekly == daily == "bullish":
-            return {
-                "decision": "BUY",
-                "confidence_score": 58,
-                "reason_codes": ["HIGHER_TF_ALIGNED"],
-                "summary": "Stub focuses only on higher timeframe bullish alignment.",
-            }
-        if weekly == daily == "bearish":
-            return {
-                "decision": "SELL",
-                "confidence_score": 58,
-                "reason_codes": ["HIGHER_TF_ALIGNED"],
-                "summary": "Stub focuses only on higher timeframe bearish alignment.",
-            }
-        return {
-            "decision": "WAIT",
-            "confidence_score": 32,
-            "reason_codes": ["HIGHER_TF_MISALIGNED"],
-            "summary": "Stub waits when weekly and daily are not aligned.",
-        }
+def get_openclaw_command():
+    return shlex.split(os.environ.get("OPENCLAW_COMMAND", DEFAULT_OPENCLAW_COMMAND))
 
-    if adapter == "stub_risk_guard":
-        if operational["high_impact_news_imminent"]:
-            return {
-                "decision": "WAIT",
-                "confidence_score": 24,
-                "reason_codes": ["NEWS_BLOCK"],
-                "summary": "Stub blocks around high-impact news.",
-            }
-        if risk["planned_risk_percent"] > 1.0:
-            return {
-                "decision": "NO-GO",
-                "confidence_score": 20,
-                "reason_codes": ["RISK_TOO_HIGH"],
-                "summary": "Stub rejects risk above its tighter 1% threshold.",
-            }
-        if risk["risk_reward_ratio"] < 2.5:
-            return {
-                "decision": "WAIT",
-                "confidence_score": 28,
-                "reason_codes": ["RR_TOO_LOW"],
-                "summary": "Stub waits until reward is stronger than 1:2.5.",
-            }
-        return {
-            "decision": primary_payload["decision"],
-            "confidence_score": max(20, primary_payload["confidence_score"] - 5),
-            "reason_codes": list(primary_payload["reason_codes"]),
-            "summary": "Stub accepts the primary direction after tighter risk screening.",
-        }
 
-    if adapter == "stub_counter_trend_probe":
-        if weekly == daily == "bullish":
-            return {
-                "decision": "SELL",
-                "confidence_score": 42,
-                "reason_codes": ["HIGHER_TF_ALIGNED"],
-                "summary": "Stub probes an intentionally contrarian bearish trade.",
-            }
-        if weekly == daily == "bearish":
-            return {
-                "decision": "BUY",
-                "confidence_score": 42,
-                "reason_codes": ["HIGHER_TF_ALIGNED"],
-                "summary": "Stub probes an intentionally contrarian bullish trade.",
-            }
-        return {
-            "decision": "WAIT",
-            "confidence_score": 26,
-            "reason_codes": ["HIGHER_TF_UNCLEAR"],
-            "summary": "Stub avoids contrarian probes when higher timeframe bias is unclear.",
-        }
+def get_openclaw_timeout_seconds():
+    raw_timeout = os.environ.get("OPENCLAW_TOURNAMENT_TIMEOUT_SECONDS", str(DEFAULT_OPENCLAW_TIMEOUT_SECONDS))
+    try:
+        return max(1, int(raw_timeout))
+    except ValueError:
+        return DEFAULT_OPENCLAW_TIMEOUT_SECONDS
 
+
+def build_openclaw_error_output(summary: str):
     return {
         "decision": "WAIT",
         "confidence_score": 0,
         "reason_codes": ["OUTPUT_SCHEMA_INVALID"],
-        "summary": f"Unknown tournament adapter: {adapter}",
+        "summary": summary,
     }
+
+
+def build_openclaw_agent_id(model: dict):
+    explicit_agent_id = model.get("agent_id")
+    if isinstance(explicit_agent_id, str) and explicit_agent_id.strip():
+        return explicit_agent_id.strip()
+    prefix = os.environ.get("OPENCLAW_TOURNAMENT_AGENT_PREFIX", DEFAULT_OPENCLAW_AGENT_PREFIX)
+    return f"{prefix}_{slugify(model['model_id'])}"
+
+
+def build_openclaw_workspace(model: dict, agent_id: str):
+    explicit_workspace = model.get("workspace")
+    if isinstance(explicit_workspace, str) and explicit_workspace.strip():
+        return explicit_workspace.strip()
+    return str(Path.home() / ".openclaw" / f"workspace-{agent_id}")
+
+
+def run_openclaw_command(arguments: list[str]):
+    command = [*get_openclaw_command(), *arguments]
+    return subprocess.run(
+        command,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        cwd=BASE_DIR,
+        check=False,
+    )
+
+
+def read_configured_openclaw_agents():
+    result = run_openclaw_command(["config", "get", "agents.list", "--json"])
+    if result.returncode != 0:
+        raise RuntimeError(result.stderr.strip() or result.stdout.strip() or "openclaw config get failed")
+
+    try:
+        agents = json.loads(result.stdout)
+    except json.JSONDecodeError as exc:
+        raise RuntimeError(f"openclaw config get returned invalid JSON: {exc}") from exc
+
+    if not isinstance(agents, list):
+        raise RuntimeError("openclaw agents.list must be a JSON array")
+    return agents
+
+
+def ensure_openclaw_agent(model: dict):
+    agent_id = build_openclaw_agent_id(model)
+    workspace = build_openclaw_workspace(model, agent_id)
+    configured_agents = read_configured_openclaw_agents()
+    existing = next((item for item in configured_agents if item.get("id") == agent_id), None)
+
+    if existing is not None:
+        existing_model = existing.get("model")
+        if existing_model not in {None, model["model_id"]}:
+            raise RuntimeError(
+                f'openclaw agent "{agent_id}" is configured for "{existing_model}", '
+                f'expected "{model["model_id"]}"'
+            )
+        return agent_id
+
+    result = run_openclaw_command(
+        [
+            "agents",
+            "add",
+            agent_id,
+            "--workspace",
+            workspace,
+            "--model",
+            model["model_id"],
+            "--non-interactive",
+            "--json",
+        ]
+    )
+    if result.returncode != 0:
+        raise RuntimeError(result.stderr.strip() or result.stdout.strip() or "openclaw agents add failed")
+
+    return agent_id
+
+
+def build_openclaw_prompt(evaluation_payload: dict, decision_schema: dict):
+    allowed_reason_codes = decision_schema.get("reason_codes", [])
+    prompt = {
+        "task": "Evaluate this paper-only Set & Forget tournament snapshot.",
+        "rules": [
+            "Use only the provided objective snapshot.",
+            "Do not mention broker execution or live trading.",
+            "Return JSON only with decision, confidence_score, reason_codes, summary.",
+            "decision must be one of BUY, SELL, WAIT, NO-GO.",
+            "confidence_score must be an integer between 0 and 100.",
+            "reason_codes must contain 1 to 4 items from the allowed list.",
+            "summary must be a short plain-language explanation.",
+        ],
+        "allowed_reason_codes": allowed_reason_codes,
+        "evaluation_payload": evaluation_payload,
+    }
+    return json.dumps(prompt, indent=2, ensure_ascii=False)
+
+
+def parse_model_response_json(text: str):
+    cleaned = text.strip()
+    if cleaned.startswith("```"):
+        cleaned = cleaned.strip("`")
+        if cleaned.startswith("json"):
+            cleaned = cleaned[4:].lstrip()
+
+    try:
+        return json.loads(cleaned)
+    except json.JSONDecodeError:
+        start = cleaned.find("{")
+        end = cleaned.rfind("}")
+        if start == -1 or end == -1 or end <= start:
+            raise
+        return json.loads(cleaned[start:end + 1])
+
+
+def normalize_model_output(raw_output: dict, decision_schema: dict):
+    if not isinstance(raw_output, dict):
+        return build_openclaw_error_output("OpenClaw model output must be a JSON object.")
+
+    decision = raw_output.get("decision")
+    confidence_score = raw_output.get("confidence_score")
+    reason_codes = raw_output.get("reason_codes")
+    summary = raw_output.get("summary")
+
+    if decision not in ALLOWED_DECISIONS:
+        return build_openclaw_error_output(f"OpenClaw model returned invalid decision: {decision!r}.")
+
+    if not isinstance(confidence_score, int) or isinstance(confidence_score, bool):
+        return build_openclaw_error_output("OpenClaw model returned a non-integer confidence_score.")
+
+    if confidence_score < 0 or confidence_score > 100:
+        return build_openclaw_error_output("OpenClaw model returned confidence_score outside 0-100.")
+
+    if not isinstance(reason_codes, list) or not reason_codes:
+        return build_openclaw_error_output("OpenClaw model returned empty reason_codes.")
+
+    if len(reason_codes) > 4:
+        return build_openclaw_error_output("OpenClaw model returned more than 4 reason_codes.")
+
+    if any(not isinstance(code, str) or not code.strip() for code in reason_codes):
+        return build_openclaw_error_output("OpenClaw model returned invalid reason_codes entries.")
+
+    allowed_reason_codes = set(decision_schema.get("reason_codes", []))
+    unknown_reason_codes = [code for code in reason_codes if code not in allowed_reason_codes]
+    if unknown_reason_codes:
+        return build_openclaw_error_output(
+            "OpenClaw model returned unknown reason_codes: " + ", ".join(unknown_reason_codes)
+        )
+
+    if not isinstance(summary, str) or not summary.strip():
+        return build_openclaw_error_output("OpenClaw model returned an empty summary.")
+
+    return {
+        "decision": decision,
+        "confidence_score": confidence_score,
+        "reason_codes": [code.strip() for code in reason_codes],
+        "summary": summary.strip(),
+    }
+
+
+def evaluate_with_openclaw(model: dict, evaluation_payload: dict, primary_payload: dict, decision_schema: dict):
+    del primary_payload
+    if shutil.which(get_openclaw_command()[0]) is None:
+        return build_openclaw_error_output("openclaw CLI is not available in PATH.")
+
+    try:
+        agent_id = ensure_openclaw_agent(model)
+    except RuntimeError as exc:
+        return build_openclaw_error_output(f"OpenClaw agent setup failed: {exc}")
+
+    result = run_openclaw_command(
+        [
+            "agent",
+            "--agent",
+            agent_id,
+            "--message",
+            build_openclaw_prompt(evaluation_payload, decision_schema),
+            "--timeout",
+            str(get_openclaw_timeout_seconds()),
+            "--json",
+        ]
+    )
+    if result.returncode != 0:
+        error_detail = result.stderr.strip() or result.stdout.strip() or "unknown OpenClaw error"
+        return build_openclaw_error_output(f"OpenClaw agent call failed: {error_detail}")
+
+    try:
+        payload = json.loads(result.stdout)
+    except json.JSONDecodeError as exc:
+        return build_openclaw_error_output(f"OpenClaw agent returned invalid JSON envelope: {exc}")
+
+    text_payloads = payload.get("result", {}).get("payloads", [])
+    first_text = text_payloads[0].get("text") if text_payloads and isinstance(text_payloads[0], dict) else None
+    if not isinstance(first_text, str) or not first_text.strip():
+        return build_openclaw_error_output("OpenClaw agent response did not contain a text payload.")
+
+    try:
+        parsed_output = parse_model_response_json(first_text)
+    except json.JSONDecodeError as exc:
+        return build_openclaw_error_output(f"OpenClaw model text was not valid JSON: {exc}")
+
+    return normalize_model_output(parsed_output, decision_schema)
 
 
 def apply_hard_gate_policy(model_output: dict, primary_payload: dict):
@@ -290,7 +429,9 @@ def run_tournament(
     runs_dir: Path,
     tournament_log: Path,
     run_label: str | None = None,
+    model_decision_runner=None,
 ):
+    runtime_env.load_standardized_env(BASE_DIR)
     feature_errors = feature_snapshot_module.validate_feature_snapshot(feature_snapshot, feature_schema)
     if feature_errors:
         return {
@@ -332,8 +473,9 @@ def run_tournament(
     evaluation_payload_path = run_dir / "openclaw_evaluation_payload.json"
 
     entries = []
+    model_decision_runner = model_decision_runner or evaluate_with_openclaw
     for model in models_manifest["models"]:
-        raw_output = build_stub_decision(model["adapter"], evaluation_payload, primary_payload)
+        raw_output = model_decision_runner(model, evaluation_payload, primary_payload, decision_schema)
         evaluated_output = apply_hard_gate_policy(raw_output, primary_payload)
         entry = build_tournament_entry(run_id, feature_snapshot, model, primary_payload, evaluated_output)
         entry_errors = validate_tournament_entry(entry, output_schema)
