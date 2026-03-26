@@ -1,0 +1,13 @@
+{
+  "pairs": [
+    "GBPJPY",
+    "EURJPY",
+    "EURGBP"
+  ],
+  "execution_timeframe": "4H",
+  "execution_mode": "paper",
+  "max_requests_per_minute": 6,
+  "minute_spacing": 1,
+  "fxalex_confluence_enabled": false,
+  "news_context_enabled": false
+}

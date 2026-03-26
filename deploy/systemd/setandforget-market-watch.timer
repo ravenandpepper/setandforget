@@ -1,0 +1,11 @@
+[Unit]
+Description=Run Set & Forget guarded market watch every hour
+
+[Timer]
+OnCalendar=hourly
+Persistent=true
+AccuracySec=1min
+Unit=setandforget-market-watch.service
+
+[Install]
+WantedBy=timers.target
