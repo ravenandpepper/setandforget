@@ -236,6 +236,13 @@ def emit_output(summary: dict, output_format: str):
             f"| exit_code={summary['exit_code']}"
         ),
     ]
+    if summary.get("status") == "skipped_by_guard":
+        guard = summary.get("guard") or {}
+        lines.append(
+            f"Guard: eligible={guard.get('eligible')} "
+            f"skip_reason_code={guard.get('skip_reason_code')} "
+            f"| {guard.get('summary')}"
+        )
     for bucket in summary["schedule"]["buckets"]:
         lines.append(
             f"- {bucket['scheduled_for']}: pairs={','.join(bucket['pairs'])} "
