@@ -30,16 +30,25 @@ sudo cat "$CONF_PATH" > "$TMP_FILE"
 python3 - "$TMP_FILE" "$SNIPPET_FILE" <<'PY'
 import sys
 from pathlib import Path
+import re
 
 conf_path = Path(sys.argv[1])
 snippet_path = Path(sys.argv[2])
-marker = "# setandforget tournament dashboard begin"
+marker_begin = "# setandforget tournament dashboard begin"
+marker_end = "# setandforget tournament dashboard end"
 
 conf = conf_path.read_text(encoding="utf-8")
 snippet = snippet_path.read_text(encoding="utf-8").rstrip()
 
-if marker in conf:
-    print("Dashboard snippet already present.")
+pattern = re.compile(
+    rf"\n?    {re.escape(marker_begin)}.*?    {re.escape(marker_end)}\n?",
+    re.DOTALL,
+)
+
+if marker_begin in conf and marker_end in conf:
+    updated = pattern.sub("\n" + snippet + "\n", conf, count=1)
+    conf_path.write_text(updated, encoding="utf-8")
+    print("Dashboard snippet replaced in nginx site config.")
     raise SystemExit(0)
 
 anchor = "    client_max_body_size 64k;\n"
