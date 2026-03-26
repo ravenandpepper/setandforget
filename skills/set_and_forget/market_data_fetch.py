@@ -138,7 +138,11 @@ def derive_session_window(reference_timestamp: str | None):
 
     london_open = 8 <= london.hour < 17
     new_york_open = 8 <= new_york.hour < 17
-    return "london_newyork_overlap" if london_open and new_york_open else "outside_overlap"
+    if london_open and new_york_open:
+        return "london_newyork_overlap"
+    if london_open:
+        return "london_session"
+    return "outside_overlap"
 
 
 def derive_planned_entry_price(candles: dict, higher_trend: str, weekly_state: dict, daily_state: dict, h4_state: dict):

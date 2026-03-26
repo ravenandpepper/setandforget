@@ -106,7 +106,10 @@ def evaluate_forex_run_guard(trigger_time: str | None, execution_timeframe: str,
             "pairs": normalized_pairs,
         }
 
-    if market_data_fetch.derive_session_window(serialize_timestamp(timestamp)) != "london_newyork_overlap":
+    if market_data_fetch.derive_session_window(serialize_timestamp(timestamp)) not in {
+        "london_session",
+        "london_newyork_overlap",
+    }:
         return {
             "guard_version": "1.0",
             "evaluated_at": timestamp_now(),

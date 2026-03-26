@@ -82,6 +82,17 @@ def run_valid_case():
     }
 
 
+def run_london_session_derivation_case():
+    session_window = market_data_fetch.derive_session_window("2026-03-27T08:00:00Z")
+    assert session_window == "london_session", (
+        "European morning before New York should derive london_session"
+    )
+    return {
+        "id": "trigger_timestamp_in_european_morning_maps_to_london_session",
+        "session_window": session_window,
+    }
+
+
 def run_missing_api_key_case():
     payload = load_json(TRIGGER_ONLY_ALERT_FILE)
     with patch.dict(
@@ -106,9 +117,11 @@ def run_missing_api_key_case():
 
 def main():
     valid = run_valid_case()
+    london = run_london_session_derivation_case()
     missing = run_missing_api_key_case()
-    print("PASS 2/2 market data fetch scenarios")
+    print("PASS 3/3 market data fetch scenarios")
     print(f"- {valid['id']}: adapter={valid['adapter']} pair={valid['pair']}")
+    print(f"- {london['id']}: session_window={london['session_window']}")
     print(f"- {missing['id']}: status={missing['status']}")
 
 

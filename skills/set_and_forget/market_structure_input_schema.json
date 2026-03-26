@@ -190,7 +190,7 @@
               "name": "session_window",
               "type": "string",
               "required": true,
-              "allowed_values": ["london_newyork_overlap", "outside_overlap", "unknown"]
+              "allowed_values": ["london_session", "london_newyork_overlap", "outside_overlap", "unknown"]
             },
             {
               "name": "set_and_forget_possible",

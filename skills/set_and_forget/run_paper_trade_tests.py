@@ -161,6 +161,42 @@ def run_blocked_case(case: dict, skill: dict, schema: dict):
     }
 
 
+def run_london_session_allowed_case(skill: dict, schema: dict):
+    fixtures = load_json(FIXTURES_FILE)
+    snapshot = dict(fixtures["cases"][0]["snapshot"])
+    snapshot["session_window"] = "london_session"
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        log_path = Path(tmpdir) / "paper_trades_log.jsonl"
+        payload = build_payload_for_snapshot(
+            snapshot,
+            skill,
+            schema,
+            allow_fxalex_call=False,
+        )
+        original_notifier = engine.telegram_notify.maybe_send_paper_trade_notification
+        try:
+            engine.telegram_notify.maybe_send_paper_trade_notification = lambda _ticket: {
+                "status": "sent",
+                "sent": True,
+                "message_id": 12345,
+            }
+            ticket, payload = write_ticket_if_needed(snapshot, payload, log_path)
+            rows = load_jsonl_rows(log_path)
+        finally:
+            engine.telegram_notify.maybe_send_paper_trade_notification = original_notifier
+
+    assert payload["decision"] == "BUY", "london_session should allow the same valid BUY setup"
+    assert ticket is not None, "london_session should still create a paper trade"
+    assert len(rows) == 1, "london_session allowed trade should write one paper trade row"
+    return {
+        "id": "buy_london_session_creates_ticket",
+        "decision": payload["decision"],
+        "logged_rows": len(rows),
+        "final_engine_source": rows[0]["final_engine_source"],
+    }
+
+
 def main():
     fixtures = load_json(FIXTURES_FILE)
     skill = load_json(SKILL_FILE)
@@ -172,8 +208,9 @@ def main():
             results.append(run_blocked_case(case, skill, schema))
         else:
             results.append(run_single_ticket_case(case, skill, schema))
+    results.append(run_london_session_allowed_case(skill, schema))
 
-    print(f"PASS {len(results)}/{len(fixtures['cases'])} paper trade scenarios")
+    print(f"PASS {len(results)}/{len(results)} paper trade scenarios")
     for result in results:
         print(
             f"- {result['id']}: decision={result['decision']} "

@@ -101,10 +101,10 @@
     },
     {
       "id": "SG10",
-      "if": "session_window != 'london_newyork_overlap'",
+      "if": "session_window != 'london_newyork_overlap' and session_window != 'london_session'",
       "decision": "WAIT",
       "reason_code": "SESSION_BLOCK",
-      "note": "Entries alleen tijdens Londen-New York overlap."
+      "note": "Entries alleen tijdens de Londense sessie of de Londen-New York overlap."
     },
     {
       "id": "SG11",

@@ -265,12 +265,12 @@ def evaluate_rules(snapshot: dict, skill: dict):
             "summary": "High-impact nieuws staat op korte termijn gepland."
         }
 
-    if snapshot["session_window"] != "london_newyork_overlap":
+    if snapshot["session_window"] not in {"london_session", "london_newyork_overlap"}:
         return {
             "decision": "WAIT",
             "confidence_score": 30,
             "reason_codes": ["SESSION_BLOCK"],
-            "summary": "De setup valt buiten de Londen-New York overlap."
+            "summary": "De setup valt buiten de toegestane Londen-sessie of overlap."
         }
 
     if snapshot["planned_risk_percent"] > skill["risk_policy"]["max_risk_percent"]:
