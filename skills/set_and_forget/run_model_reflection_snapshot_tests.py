@@ -27,6 +27,8 @@ def build_ticket(model_id: str, decision: str, confidence: int, reason_codes: li
         "pair": "EURUSD",
         "execution_timeframe": "4H",
         "execution_mode": "paper",
+        "portfolio_currency": "EUR",
+        "initial_capital_eur": 500.0,
         "decision": decision,
         "primary_decision": "BUY",
         "entry_price": 1.0862,
@@ -68,6 +70,7 @@ def build_settlement(model_id: str, outcome_status: str, realized_pnl_r, run_id:
         "planned_risk_percent": 1.0,
         "realized_pnl_r": realized_pnl_r,
         "realized_pnl_percent": realized_pnl_r,
+        "realized_pnl_eur": round(realized_pnl_r * 5.0, 4) if realized_pnl_r is not None else None,
         "closed_at": "2026-03-10T20:00:00Z" if outcome_status in {"take_profit_hit", "stop_loss_hit"} else None,
         "candles_evaluated": 9,
     }
@@ -89,6 +92,8 @@ def assert_model_snapshot_metrics():
 
     assert opus["closed_trades_total"] == 1, "Opus should report one closed trade"
     assert opus["cumulative_realized_pnl_r"] == -1.0, "Opus should reflect the realized loss"
+    assert opus["cumulative_realized_pnl_eur"] == -5.0, "Opus should also reflect the realized EUR loss"
+    assert opus["current_equity_eur"] == 495.0, "Opus current equity should start from the 500 EUR model bankroll"
     assert opus["win_rate_closed_percent"] == 0.0, "Opus win rate should be 0%"
     assert kimi["invalid_output_count"] == 1, "Kimi should count the schema invalid output"
     assert kimi["actionable_trades_total"] == 0, "Kimi WAIT should not count as actionable"

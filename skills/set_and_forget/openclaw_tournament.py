@@ -34,6 +34,7 @@ DEFAULT_OPENCLAW_TIMEOUT_SECONDS = 180
 DEFAULT_OPENCLAW_AGENT_PREFIX = "setandforget_tournament"
 DEFAULT_OPENCLAW_SESSION_PREFIX = "setandforget_tournament"
 DEFAULT_OPENCLAW_MAX_ATTEMPTS = 2
+DEFAULT_TOURNAMENT_INITIAL_CAPITAL_EUR = 500.0
 
 
 def load_json(path: Path):
@@ -531,6 +532,8 @@ def build_shadow_portfolio_ticket(entry: dict, feature_snapshot: dict):
         "pair": entry["pair"],
         "execution_timeframe": entry["execution_timeframe"],
         "execution_mode": entry["execution_mode"],
+        "portfolio_currency": "EUR",
+        "initial_capital_eur": DEFAULT_TOURNAMENT_INITIAL_CAPITAL_EUR,
         "decision": entry["decision"],
         "primary_decision": entry["primary_decision"],
         "entry_price": risk.get("entry_price"),

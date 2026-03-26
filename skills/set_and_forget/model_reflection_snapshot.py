@@ -9,6 +9,7 @@ BASE_DIR = Path(__file__).resolve().parent
 DEFAULT_SHADOW_TICKETS_FILE = BASE_DIR / "openclaw_shadow_portfolio_log.jsonl"
 DEFAULT_SETTLEMENTS_FILE = BASE_DIR / "openclaw_shadow_portfolio_settlements.jsonl"
 DEFAULT_REFLECTION_LOG_FILE = BASE_DIR / "openclaw_model_reflection_snapshots.jsonl"
+DEFAULT_MODEL_BANKROLL_EUR = 500.0
 
 
 def load_json_rows(path: Path):
@@ -58,6 +59,21 @@ def round_or_none(value, digits=4):
     if value is None:
         return None
     return round(value, digits)
+
+
+def derive_initial_capital_eur(ticket: dict):
+    value = ticket.get("initial_capital_eur")
+    if value is None:
+        return DEFAULT_MODEL_BANKROLL_EUR
+    return float(value)
+
+
+def derive_realized_pnl_eur(settlement: dict, initial_capital_eur: float):
+    if settlement.get("realized_pnl_eur") is not None:
+        return float(settlement["realized_pnl_eur"])
+    if settlement.get("realized_pnl_percent") is None:
+        return None
+    return round((initial_capital_eur * float(settlement["realized_pnl_percent"])) / 100.0, 4)
 
 
 def build_self_review(snapshot: dict):
@@ -124,8 +140,15 @@ def build_model_snapshot(model_id: str, tickets: list[dict], latest_settlement_b
     pending = [item for item in settlements if item["outcome_status"] == "pending"]
     ambiguous = [item for item in settlements if item["outcome_status"] == "ambiguous_intrabar"]
     not_opened = [item for item in settlements if item["outcome_status"] == "not_opened"]
+    initial_capital_eur = derive_initial_capital_eur(max(tickets, key=lambda item: item.get("logged_at", item.get("recorded_at", ""))))
     realized_values = [item["realized_pnl_r"] for item in closed if item["realized_pnl_r"] is not None]
+    realized_eur_values = [
+        derive_realized_pnl_eur(item, initial_capital_eur)
+        for item in closed
+        if derive_realized_pnl_eur(item, initial_capital_eur) is not None
+    ]
     cumulative_realized_pnl_r = round_or_none(sum(realized_values), 4) if realized_values else 0.0
+    cumulative_realized_pnl_eur = round_or_none(sum(realized_eur_values), 4) if realized_eur_values else 0.0
     average_realized_pnl_r = (
         round_or_none(sum(realized_values) / len(realized_values), 4) if realized_values else None
     )
@@ -145,6 +168,8 @@ def build_model_snapshot(model_id: str, tickets: list[dict], latest_settlement_b
         "generated_at": timestamp_now(),
         "model_id": model_id,
         "portfolio_key": latest_ticket["portfolio_key"],
+        "portfolio_currency": latest_ticket.get("portfolio_currency", "EUR"),
+        "initial_capital_eur": initial_capital_eur,
         "evaluations_total": len(tickets),
         "actionable_trades_total": len(actionable_tickets),
         "closed_trades_total": len(closed),
@@ -156,6 +181,11 @@ def build_model_snapshot(model_id: str, tickets: list[dict], latest_settlement_b
         "invalid_output_count": invalid_output_count,
         "win_rate_closed_percent": win_rate_closed_percent,
         "cumulative_realized_pnl_r": cumulative_realized_pnl_r,
+        "cumulative_realized_pnl_eur": cumulative_realized_pnl_eur,
+        "current_equity_eur": round_or_none(
+            initial_capital_eur + cumulative_realized_pnl_eur,
+            4,
+        ),
         "average_realized_pnl_r": average_realized_pnl_r,
         "average_confidence_score": round_or_none(total_confidence / len(tickets), 2) if tickets else None,
         "latest_run_id": latest_ticket["run_id"],

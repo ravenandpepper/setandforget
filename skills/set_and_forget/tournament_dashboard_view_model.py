@@ -10,6 +10,7 @@ DEFAULT_TOURNAMENT_LOG_FILE = BASE_DIR / "openclaw_tournament_log.jsonl"
 DEFAULT_SETTLEMENT_LOG_FILE = BASE_DIR / "openclaw_shadow_portfolio_settlements.jsonl"
 DEFAULT_REFLECTION_LOG_FILE = BASE_DIR / "openclaw_model_reflection_snapshots.jsonl"
 DEFAULT_OUTPUT_FILE = BASE_DIR / "openclaw_tournament_dashboard_view_model.json"
+DEFAULT_MODEL_BANKROLL_EUR = 500.0
 
 
 def load_json_rows(path: Path):
@@ -60,6 +61,25 @@ def latest_by_model(rows: list[dict], timestamp_field: str):
     return latest
 
 
+def derive_initial_capital_eur(latest_reflection: dict | None):
+    if latest_reflection is None:
+        return DEFAULT_MODEL_BANKROLL_EUR
+    value = latest_reflection.get("initial_capital_eur")
+    if value is None:
+        return DEFAULT_MODEL_BANKROLL_EUR
+    return float(value)
+
+
+def derive_realized_pnl_eur(settlement: dict | None, initial_capital_eur: float):
+    if not settlement:
+        return None
+    if settlement.get("realized_pnl_eur") is not None:
+        return float(settlement["realized_pnl_eur"])
+    if settlement.get("realized_pnl_percent") is None:
+        return None
+    return round((initial_capital_eur * float(settlement["realized_pnl_percent"])) / 100.0, 4)
+
+
 def build_settlement_index(settlements: list[dict]):
     latest = {}
     for row in settlements:
@@ -76,6 +96,8 @@ def calculate_model_metrics(model_id: str, entries: list[dict], settlement_index
     actionable_entries = [item for item in ordered_entries if item["decision"] in {"BUY", "SELL"}]
     baseline_agreement_count = sum(1 for item in ordered_entries if item["decision"] == item["primary_decision"])
     cumulative_r = 0.0
+    cumulative_eur = 0.0
+    initial_capital_eur = derive_initial_capital_eur(latest_reflection)
     equity_curve = []
     recent_outcomes = []
     wins = 0
@@ -86,8 +108,10 @@ def calculate_model_metrics(model_id: str, entries: list[dict], settlement_index
         settlement = settlement_index.get((item["run_id"], item["model_id"]))
         outcome_status = settlement.get("outcome_status") if settlement else None
         realized_r = settlement.get("realized_pnl_r") if settlement else None
+        realized_eur = derive_realized_pnl_eur(settlement, initial_capital_eur)
         if outcome_status in {"take_profit_hit", "stop_loss_hit"} and realized_r is not None:
             cumulative_r += realized_r
+            cumulative_eur += realized_eur or 0.0
             closed += 1
             if outcome_status == "take_profit_hit":
                 wins += 1
@@ -99,6 +123,10 @@ def calculate_model_metrics(model_id: str, entries: list[dict], settlement_index
                 "run_id": item["run_id"],
                 "recorded_at": item["recorded_at"],
                 "equity_r": round_or_none(cumulative_r, 4),
+                "equity_eur": round_or_none(
+                    initial_capital_eur + cumulative_eur,
+                    4,
+                ),
                 "decision": item["decision"],
                 "outcome_status": outcome_status or "unsettled",
             }
@@ -110,6 +138,7 @@ def calculate_model_metrics(model_id: str, entries: list[dict], settlement_index
                 "confidence_score": item["confidence_score"],
                 "outcome_status": outcome_status or "unsettled",
                 "realized_pnl_r": realized_r,
+                "realized_pnl_eur": realized_eur,
                 "recorded_at": item["recorded_at"],
             }
         )
@@ -132,9 +161,16 @@ def calculate_model_metrics(model_id: str, entries: list[dict], settlement_index
         "wins_total": wins,
         "losses_total": losses,
         "invalid_output_count": invalid_output_count,
+        "portfolio_currency": latest_reflection.get("portfolio_currency") if latest_reflection else "EUR",
+        "initial_capital_eur": initial_capital_eur,
         "baseline_agreement_rate_percent": agreement_rate,
         "win_rate_percent": win_rate,
         "cumulative_realized_pnl_r": round_or_none(cumulative_r, 4),
+        "cumulative_realized_pnl_eur": round_or_none(cumulative_eur, 4),
+        "current_equity_eur": round_or_none(
+            initial_capital_eur + cumulative_eur,
+            4,
+        ),
         "average_confidence_score": avg_confidence,
         "latest_decision": latest_entry["decision"] if latest_entry else None,
         "latest_confidence_score": latest_entry["confidence_score"] if latest_entry else None,
@@ -205,6 +241,8 @@ def build_dashboard_view_model(
             "model_id": item["model_id"],
             "display_name": item["display_name"],
             "cumulative_realized_pnl_r": item["cumulative_realized_pnl_r"],
+            "cumulative_realized_pnl_eur": item["cumulative_realized_pnl_eur"],
+            "current_equity_eur": item["current_equity_eur"],
             "win_rate_percent": item["win_rate_percent"],
             "invalid_output_count": item["invalid_output_count"],
             "baseline_agreement_rate_percent": item["baseline_agreement_rate_percent"],

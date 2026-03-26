@@ -40,6 +40,8 @@ def build_shadow_ticket(model_id: str, decision: str, outcome_status: str = "pen
         "pair": "EURUSD",
         "execution_timeframe": "4H",
         "execution_mode": "paper",
+        "portfolio_currency": "EUR",
+        "initial_capital_eur": 500.0,
         "decision": decision,
         "primary_decision": "BUY",
         "entry_price": 1.0862,
@@ -76,6 +78,7 @@ def assert_buy_stop_loss_settlement_in_fixture_window():
     assert settlement["outcome_status"] == "stop_loss_hit", "fixture BUY should stop out in the outcome window"
     assert settlement["realized_pnl_r"] == -1.0, "stopped BUY should realize -1R"
     assert settlement["realized_pnl_percent"] == -1.0, "stopped BUY should realize -risk percent"
+    assert settlement["realized_pnl_eur"] == -5.0, "stopped BUY should realize -5 EUR on a 500 EUR portfolio"
     assert settlement["closed_at"] == "2026-03-10T20:00:00Z", "expected H4 candle to stop the trade"
 
 
@@ -90,6 +93,7 @@ def assert_buy_take_profit_settlement_in_synthetic_window():
     assert settlement["outcome_status"] == "take_profit_hit", "synthetic BUY should hit take profit"
     assert settlement["realized_pnl_r"] == 2.4, "take profit should realize configured RR"
     assert settlement["realized_pnl_percent"] == 2.4, "take profit should realize RR times risk percent"
+    assert settlement["realized_pnl_eur"] == 12.0, "take profit should realize 12 EUR on a 500 EUR portfolio"
     assert settlement["closed_at"] == "2026-03-11T04:00:00Z", "expected synthetic H4 candle to close the trade"
 
 
@@ -132,6 +136,7 @@ def assert_batch_settlement_logs_records():
         sell_row = next(item for item in rows if item["decision"] == "SELL")
         assert sell_row["outcome_status"] == "take_profit_hit", "fixture SELL should hit take profit"
         assert sell_row["realized_pnl_r"] == 2.4, "profitable SELL should realize configured RR"
+        assert sell_row["realized_pnl_eur"] == 12.0, "profitable SELL should realize EUR PnL on the shadow capital"
 
 
 def main():

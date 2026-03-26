@@ -184,6 +184,10 @@ def build_settlement_record(
 ):
     realized_pnl_r = pnl[0] if pnl else None
     realized_pnl_percent = pnl[1] if pnl else None
+    initial_capital_eur = ticket.get("initial_capital_eur")
+    realized_pnl_eur = None
+    if initial_capital_eur is not None and realized_pnl_percent is not None:
+        realized_pnl_eur = round((float(initial_capital_eur) * float(realized_pnl_percent)) / 100.0, 4)
     return {
         "shadow_settlement_version": "1.0",
         "settled_at": timestamp_now(),
@@ -192,6 +196,8 @@ def build_settlement_record(
         "portfolio_key": ticket["portfolio_key"],
         "pair": ticket["pair"],
         "execution_timeframe": ticket["execution_timeframe"],
+        "portfolio_currency": ticket.get("portfolio_currency", "EUR"),
+        "initial_capital_eur": initial_capital_eur,
         "decision": ticket["decision"],
         "prior_outcome_status": ticket["outcome_status"],
         "outcome_status": outcome_status,
@@ -204,6 +210,7 @@ def build_settlement_record(
         "planned_risk_percent": ticket["planned_risk_percent"],
         "realized_pnl_r": realized_pnl_r,
         "realized_pnl_percent": realized_pnl_percent,
+        "realized_pnl_eur": realized_pnl_eur,
         "closed_at": closed_at,
         "candles_evaluated": candles_evaluated,
     }

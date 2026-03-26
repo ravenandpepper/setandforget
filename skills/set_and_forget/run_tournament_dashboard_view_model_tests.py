@@ -49,6 +49,8 @@ def build_settlement_row(
         "portfolio_key": model_id.replace("/", "_"),
         "pair": "EURUSD",
         "execution_timeframe": "4H",
+        "portfolio_currency": "EUR",
+        "initial_capital_eur": 500.0,
         "decision": "BUY",
         "prior_outcome_status": "pending",
         "outcome_status": outcome_status,
@@ -61,6 +63,7 @@ def build_settlement_row(
         "planned_risk_percent": 1.0,
         "realized_pnl_r": realized_pnl_r,
         "realized_pnl_percent": realized_pnl_r,
+        "realized_pnl_eur": round(realized_pnl_r * 5.0, 4) if realized_pnl_r is not None else None,
         "closed_at": "2026-03-10T20:00:00Z",
         "candles_evaluated": 9,
     }
@@ -77,6 +80,8 @@ def build_reflection_row(
         "reflection_snapshot_version": "1.0",
         "generated_at": generated_at,
         "model_id": model_id,
+        "portfolio_currency": "EUR",
+        "initial_capital_eur": 500.0,
         "peer_rank_by_pnl": peer_rank_by_pnl,
         "peer_gap_to_best_r": peer_gap_to_best_r,
         "self_review": self_review,
@@ -186,11 +191,20 @@ def assert_dashboard_view_model_aggregates_metrics():
     assert result["leaderboard"][1]["cumulative_realized_pnl_r"] == 1.4, (
         "Opus cumulative realized R should sum across closed trades"
     )
+    assert result["leaderboard"][1]["cumulative_realized_pnl_eur"] == 7.0, (
+        "Opus cumulative realized EUR should sum across settled trades on a 500 EUR bankroll"
+    )
+    assert result["leaderboard"][1]["current_equity_eur"] == 507.0, (
+        "Opus current equity should track the 500 EUR start plus realized EUR PnL"
+    )
     assert result["leaderboard"][1]["baseline_agreement_rate_percent"] == 100.0, (
         "Agreement with the primary baseline should be surfaced"
     )
     assert result["leaderboard"][1]["equity_curve"][-1]["equity_r"] == 1.4, (
         "Equity curve should carry cumulative realized R over time"
+    )
+    assert result["leaderboard"][1]["equity_curve"][-1]["equity_eur"] == 507.0, (
+        "Equity curve should also carry EUR equity over time"
     )
     assert result["charts"]["performance_bars"][0]["model_id"] == "openrouter/moonshotai/kimi-k2", (
         "Performance bars should follow leaderboard ordering"
