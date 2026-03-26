@@ -32,6 +32,7 @@ Niet op vrije chartbeschrijvingen en niet op losse trader-interpretaties.
 - [feature_snapshot_schema.json](/Users/jeroenderaaf/Sites/setandforget/skills/set_and_forget/feature_snapshot_schema.json)
 - [feature_snapshot.example.json](/Users/jeroenderaaf/Sites/setandforget/skills/set_and_forget/feature_snapshot.example.json)
 - [feature_snapshot.py](/Users/jeroenderaaf/Sites/setandforget/skills/set_and_forget/feature_snapshot.py)
+- [OPENCLAW_TOURNAMENT.md](/Users/jeroenderaaf/Sites/setandforget/skills/set_and_forget/OPENCLAW_TOURNAMENT.md)
 
 ## Wat hierin zit
 

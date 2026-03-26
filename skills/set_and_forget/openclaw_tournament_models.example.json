@@ -1,0 +1,21 @@
+{
+  "tournament_id": "openclaw_shadow_models_v1",
+  "models": [
+    {
+      "model_id": "claude_opus_shadow",
+      "adapter": "stub_primary_mirror"
+    },
+    {
+      "model_id": "gemini_shadow",
+      "adapter": "stub_trend_only"
+    },
+    {
+      "model_id": "minimax_shadow",
+      "adapter": "stub_risk_guard"
+    },
+    {
+      "model_id": "gpt_shadow",
+      "adapter": "stub_counter_trend_probe"
+    }
+  ]
+}

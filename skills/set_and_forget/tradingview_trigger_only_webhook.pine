@@ -3,7 +3,7 @@ indicator("Set & Forget Trigger Only Webhook", overlay=true)
 
 executionMode = input.string("paper", "Execution mode", options=["paper", "advisory"])
 fxalexConfluenceEnabled = input.bool(false, "Enable fxalex confluence")
-newsContextEnabled = input.bool(false, "Enable news context")
+newsContextEnabled = input.bool(true, "Enable news context")
 showTrendPanel = input.bool(true, "Show trend panel")
 
 buildPayload() =>

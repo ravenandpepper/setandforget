@@ -84,6 +84,8 @@ Belangrijke nuances:
 - de server canonicaliseert `pair` uit `{{ticker}}`, dus `PEPPERSTONE:EURUSD` wordt intern `EURUSD`
 - `{{interval}}` mag `240` zijn; de ingest normaliseert dat intern naar `4H`
 - een externe handmatige `curl` vanaf je eigen IP mag op deze publieke route `403 Forbidden` geven; dat bevestigt juist de nginx allowlist
+- de huidige trigger-only Pine en template zetten `news_context_enabled` nu standaard op `true`, zodat de VPS Brave risk-context kan meenemen
+- bestaande TradingView alerts nemen die nieuwe default niet vanzelf altijd over; open ze na de script-update opnieuw en sla ze opnieuw op
 
 ## Trigger-only Pine startpunt
 

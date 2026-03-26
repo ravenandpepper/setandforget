@@ -9,5 +9,5 @@
   "timeframe": "240",
   "execution_mode": "paper",
   "fxalex_confluence_enabled": false,
-  "news_context_enabled": false
+  "news_context_enabled": true
 }

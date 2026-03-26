@@ -1,0 +1,93 @@
+{
+  "schema_name": "openclaw_tournament_output_schema",
+  "version": "1.0",
+  "purpose": "Uniform output contract voor shadow multi-model evaluaties op exact dezelfde Set & Forget feature snapshot.",
+  "fields": [
+    {
+      "name": "tournament_entry_version",
+      "type": "string",
+      "required": true,
+      "allowed_values": ["1.0"]
+    },
+    {
+      "name": "run_id",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "recorded_at",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "model_id",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "adapter",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "pair",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "execution_timeframe",
+      "type": "string",
+      "required": true,
+      "allowed_values": ["4H"]
+    },
+    {
+      "name": "execution_mode",
+      "type": "string",
+      "required": true,
+      "allowed_values": ["paper", "advisory"]
+    },
+    {
+      "name": "primary_decision",
+      "type": "string",
+      "required": true,
+      "allowed_values": ["BUY", "SELL", "WAIT", "NO-GO"]
+    },
+    {
+      "name": "decision",
+      "type": "string",
+      "required": true,
+      "allowed_values": ["BUY", "SELL", "WAIT", "NO-GO"]
+    },
+    {
+      "name": "confidence_score",
+      "type": "integer",
+      "required": true,
+      "range": [0, 100]
+    },
+    {
+      "name": "objective_only",
+      "type": "boolean",
+      "required": true
+    },
+    {
+      "name": "hard_gate_respected",
+      "type": "boolean",
+      "required": true
+    },
+    {
+      "name": "policy_enforced",
+      "type": "boolean",
+      "required": true
+    },
+    {
+      "name": "reason_codes",
+      "type": "array",
+      "required": true
+    },
+    {
+      "name": "summary",
+      "type": "string",
+      "required": true
+    }
+  ]
+}
