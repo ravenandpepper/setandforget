@@ -6,6 +6,8 @@ from pathlib import Path
 import future_execution
 import news_context
 import paper_trading
+import runtime_env
+import telegram_notify
 
 BASE_DIR = Path(__file__).resolve().parent
 WORKSPACE_ROOT = BASE_DIR.parent.parent
@@ -548,6 +550,10 @@ def emit_payload(payload: dict, output_format: str):
 
 def maybe_create_paper_trade(snapshot: dict, payload: dict, log_path: Path):
     payload["paper_trade"]["log_path"] = str(log_path)
+    payload["paper_trade"]["telegram_notification"] = {
+        "status": "not_sent",
+        "sent": False,
+    }
 
     if not paper_trading.should_create_paper_trade(snapshot, payload):
         return payload
@@ -556,6 +562,8 @@ def maybe_create_paper_trade(snapshot: dict, payload: dict, log_path: Path):
     paper_trading.append_jsonl(log_path, ticket)
     payload["paper_trade"]["created"] = True
     payload["paper_trade"]["ticket"] = ticket
+    runtime_env.load_standardized_env(BASE_DIR)
+    payload["paper_trade"]["telegram_notification"] = telegram_notify.maybe_send_paper_trade_notification(ticket)
     return payload
 
 

@@ -61,12 +61,8 @@ def build_payload_for_snapshot(snapshot: dict, skill: dict, schema: dict, allow_
 
 
 def write_ticket_if_needed(snapshot: dict, payload: dict, log_path: Path):
-    if not paper_trading.should_create_paper_trade(snapshot, payload):
-        return None
-
-    ticket = paper_trading.build_paper_trade_ticket(snapshot, payload)
-    paper_trading.append_jsonl(log_path, ticket)
-    return ticket
+    updated_payload = engine.maybe_create_paper_trade(snapshot, payload, log_path)
+    return updated_payload.get("paper_trade", {}).get("ticket"), updated_payload
 
 
 def run_single_ticket_case(case: dict, skill: dict, schema: dict):
@@ -82,8 +78,17 @@ def run_single_ticket_case(case: dict, skill: dict, schema: dict):
             allow_fxalex_call=case["allow_fxalex_call"],
             fxalex_vote_result=case.get("fxalex_vote_result"),
         )
-        ticket = write_ticket_if_needed(snapshot, payload, log_path)
-        rows = load_jsonl_rows(log_path)
+        original_notifier = engine.telegram_notify.maybe_send_paper_trade_notification
+        try:
+            engine.telegram_notify.maybe_send_paper_trade_notification = lambda _ticket: {
+                "status": "sent",
+                "sent": True,
+                "message_id": 12345,
+            }
+            ticket, payload = write_ticket_if_needed(snapshot, payload, log_path)
+            rows = load_jsonl_rows(log_path)
+        finally:
+            engine.telegram_notify.maybe_send_paper_trade_notification = original_notifier
 
     assert payload["decision"] == expected["decision"], (
         f"{case['id']}: expected decision {expected['decision']}, got {payload['decision']}"
@@ -102,6 +107,9 @@ def run_single_ticket_case(case: dict, skill: dict, schema: dict):
     )
     assert rows[0]["final_engine_source"] == expected["final_engine_source"], (
         f"{case['id']}: final_engine_source mismatch"
+    )
+    assert payload["paper_trade"]["telegram_notification"]["sent"] is True, (
+        f"{case['id']}: expected a telegram notification result for created trades"
     )
 
     return {
@@ -123,14 +131,26 @@ def run_blocked_case(case: dict, skill: dict, schema: dict):
                 schema,
                 allow_fxalex_call=variant["allow_fxalex_call"],
             )
-            ticket = write_ticket_if_needed(variant["snapshot"], payload, log_path)
-            rows = load_jsonl_rows(log_path)
+            original_notifier = engine.telegram_notify.maybe_send_paper_trade_notification
+            try:
+                engine.telegram_notify.maybe_send_paper_trade_notification = lambda _ticket: {
+                    "status": "sent",
+                    "sent": True,
+                    "message_id": 12345,
+                }
+                ticket, payload = write_ticket_if_needed(variant["snapshot"], payload, log_path)
+                rows = load_jsonl_rows(log_path)
+            finally:
+                engine.telegram_notify.maybe_send_paper_trade_notification = original_notifier
 
         assert payload["decision"] == variant["expected_decision"], (
             f"{case['id']}:{variant['label']}: expected decision {variant['expected_decision']}, got {payload['decision']}"
         )
         assert ticket is None, f"{case['id']}:{variant['label']}: blocked decision created a paper trade"
         assert len(rows) == 0, f"{case['id']}:{variant['label']}: blocked decision wrote to the paper log"
+        assert payload["paper_trade"]["telegram_notification"]["sent"] is False, (
+            f"{case['id']}:{variant['label']}: blocked decision should not notify telegram"
+        )
         results.append(f"{variant['label']}={payload['decision']}")
 
     return {
