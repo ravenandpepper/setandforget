@@ -95,38 +95,48 @@ def run_case(case: dict, webhook_schema: dict, skill: dict, decision_schema: dic
         paper_trade_rows = load_jsonl(paper_trades_log)
 
         assert exit_code == 0, f"{case['id']}: expected exit_code 0, got {exit_code}"
+        assert summary["status"] == expected["status"], f"{case['id']}: status mismatch"
         assert summary["total_runs"] == expected["total_runs"], f"{case['id']}: total_runs mismatch"
         assert summary["ok_runs"] == expected["ok_runs"], f"{case['id']}: ok_runs mismatch"
         assert summary["error_runs"] == expected["error_runs"], f"{case['id']}: error_runs mismatch"
         assert len(summary["schedule"]["buckets"]) == expected["bucket_count"], f"{case['id']}: bucket count mismatch"
         assert summary["provider"] == expected["provider"], f"{case['id']}: provider mismatch"
-        assert summary["schedule"]["buckets"][0]["pairs"] == expected["first_bucket_pairs"], (
-            f"{case['id']}: first bucket pair order mismatch"
-        )
-        assert summary["schedule"]["buckets"][1]["pairs"] == expected["second_bucket_pairs"], (
-            f"{case['id']}: second bucket pair order mismatch"
-        )
-        assert len(decision_rows) == expected["total_runs"], f"{case['id']}: decision log row count mismatch"
-        assert len(paper_trade_rows) == expected["total_runs"], f"{case['id']}: paper trade row count mismatch"
+        assert summary["skipped_runs"] == expected["skipped_runs"], f"{case['id']}: skipped_runs mismatch"
 
-        for bucket in summary["schedule"]["buckets"]:
-            assert bucket["exit_code"] == 0, f"{case['id']}: bucket exit code mismatch"
-            for run in bucket["runs"]:
-                assert run["decision"] == expected["decision"], f"{case['id']}: decision mismatch for {run['pair']}"
-                assert run["paper_trade_created"] == expected["paper_trade_created"], (
-                    f"{case['id']}: paper trade flag mismatch for {run['pair']}"
-                )
-                assert run["provider"] == expected["provider"], f"{case['id']}: provider mismatch for {run['pair']}"
+        if expected["status"] == "completed":
+            assert summary["schedule"]["buckets"][0]["pairs"] == expected["first_bucket_pairs"], (
+                f"{case['id']}: first bucket pair order mismatch"
+            )
+            assert summary["schedule"]["buckets"][1]["pairs"] == expected["second_bucket_pairs"], (
+                f"{case['id']}: second bucket pair order mismatch"
+            )
+            assert len(decision_rows) == expected["total_runs"], f"{case['id']}: decision log row count mismatch"
+            assert len(paper_trade_rows) == expected["total_runs"], f"{case['id']}: paper trade row count mismatch"
 
-        for row in decision_rows:
-            assert row["trigger"] == "tradingview_trigger_only", f"{case['id']}: trigger mismatch in decision log"
-            assert row["decision"] == expected["decision"], f"{case['id']}: decision log mismatch"
+            for bucket in summary["schedule"]["buckets"]:
+                assert bucket["exit_code"] == 0, f"{case['id']}: bucket exit code mismatch"
+                for run in bucket["runs"]:
+                    assert run["decision"] == expected["decision"], f"{case['id']}: decision mismatch for {run['pair']}"
+                    assert run["paper_trade_created"] == expected["paper_trade_created"], (
+                        f"{case['id']}: paper trade flag mismatch for {run['pair']}"
+                    )
+                    assert run["provider"] == expected["provider"], f"{case['id']}: provider mismatch for {run['pair']}"
+
+            for row in decision_rows:
+                assert row["trigger"] == "tradingview_trigger_only", f"{case['id']}: trigger mismatch in decision log"
+                assert row["decision"] == expected["decision"], f"{case['id']}: decision log mismatch"
+        else:
+            assert summary["guard"]["skip_reason_code"] == expected["skip_reason_code"], (
+                f"{case['id']}: guard reason mismatch"
+            )
+            assert len(decision_rows) == 0, f"{case['id']}: skipped guard run should not write decisions"
+            assert len(paper_trade_rows) == 0, f"{case['id']}: skipped guard run should not write paper trades"
 
         return {
             "id": case["id"],
             "bucket_count": len(summary["schedule"]["buckets"]),
             "total_runs": summary["total_runs"],
-            "decision": expected["decision"],
+            "status": summary["status"],
         }
 
 
@@ -145,7 +155,7 @@ def main():
     for result in results:
         print(
             f"- {result['id']}: bucket_count={result['bucket_count']} "
-            f"total_runs={result['total_runs']} decision={result['decision']}"
+            f"total_runs={result['total_runs']} status={result['status']}"
         )
 
 

@@ -9,17 +9,19 @@
           "USDJPY",
           "AUDUSD"
         ],
-        "trigger_time": "2026-03-16T13:00:00Z",
+        "trigger_time": "2026-03-16T12:00:00Z",
         "execution_timeframe": "4H",
         "execution_mode": "paper",
         "max_requests_per_minute": 6,
         "minute_spacing": 1
       },
       "expected": {
+        "status": "completed",
         "bucket_count": 2,
         "total_runs": 4,
         "ok_runs": 4,
         "error_runs": 0,
+        "skipped_runs": 0,
         "provider": "twelvedata",
         "decision": "BUY",
         "paper_trade_created": true,
@@ -31,6 +33,31 @@
           "USDJPY",
           "AUDUSD"
         ]
+      }
+    },
+    {
+      "id": "scheduled_trigger_batch_skips_weekend_window",
+      "input": {
+        "pairs": [
+          "GBPJPY",
+          "EURJPY",
+          "EURGBP"
+        ],
+        "trigger_time": "2026-03-28T12:00:00Z",
+        "execution_timeframe": "4H",
+        "execution_mode": "paper",
+        "max_requests_per_minute": 6,
+        "minute_spacing": 1
+      },
+      "expected": {
+        "status": "skipped_by_guard",
+        "bucket_count": 0,
+        "total_runs": 0,
+        "ok_runs": 0,
+        "error_runs": 0,
+        "skipped_runs": 3,
+        "provider": "twelvedata",
+        "skip_reason_code": "FOREX_WEEKEND_CLOSED"
       }
     }
   ]

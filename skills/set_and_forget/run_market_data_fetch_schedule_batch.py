@@ -3,6 +3,7 @@ import json
 import sys
 from pathlib import Path
 
+import forex_run_guard
 import market_data_fetch_schedule
 import run_set_and_forget as engine
 import run_structured_automation as automation
@@ -115,6 +116,50 @@ def run_schedule_plan(
     }, exit_code
 
 
+def build_guard_skip_summary(
+    pairs: list[str],
+    trigger_time: str | None,
+    execution_timeframe: str,
+    execution_mode: str,
+    max_requests_per_minute: int,
+    minute_spacing: int,
+    guard_result: dict,
+):
+    normalized_pairs = market_data_fetch_schedule.normalize_pairs(pairs)
+    normalized_timeframe = market_data_fetch_schedule.normalize_execution_timeframe(execution_timeframe)
+    requests_per_pair = len(market_data_fetch_schedule.market_data_fetch.TWELVEDATA_TIMEFRAMES)
+    pairs_per_minute = max_requests_per_minute // requests_per_pair if max_requests_per_minute >= requests_per_pair else 0
+    return {
+        "provider": "twelvedata",
+        "adapter": market_data_fetch_schedule.market_data_fetch.TWELVEDATA_ADAPTER_KEY,
+        "execution_timeframe": normalized_timeframe,
+        "execution_mode": execution_mode,
+        "guard": guard_result,
+        "status": "skipped_by_guard",
+        "request_budget": {
+            "max_requests_per_minute": max_requests_per_minute,
+            "requests_per_pair": requests_per_pair,
+            "pairs_per_minute": pairs_per_minute,
+            "effective_requests_per_minute": pairs_per_minute * requests_per_pair,
+            "unused_requests_per_minute": max_requests_per_minute - (pairs_per_minute * requests_per_pair),
+            "pair_atomic_scheduling": True,
+        },
+        "schedule": {
+            "base_trigger_time": trigger_time,
+            "minute_spacing": minute_spacing,
+            "total_pairs": len(normalized_pairs),
+            "total_estimated_requests": 0,
+            "estimated_completion_minutes": 0,
+            "buckets": [],
+        },
+        "total_runs": 0,
+        "ok_runs": 0,
+        "error_runs": 0,
+        "skipped_runs": len(normalized_pairs),
+        "exit_code": 0,
+    }
+
+
 def run_scheduled_trigger_batch(
     pairs: list[str],
     trigger_time: str | None,
@@ -130,7 +175,24 @@ def run_scheduled_trigger_batch(
     minute_spacing: int = market_data_fetch_schedule.DEFAULT_MINUTE_SPACING,
     fxalex_confluence_enabled: bool = False,
     news_context_enabled: bool = False,
+    enforce_run_guard: bool = True,
 ):
+    guard_result = forex_run_guard.evaluate_forex_run_guard(
+        trigger_time=trigger_time,
+        execution_timeframe=execution_timeframe,
+        pairs=pairs,
+    )
+    if enforce_run_guard and not guard_result["eligible"]:
+        return build_guard_skip_summary(
+            pairs=pairs,
+            trigger_time=trigger_time,
+            execution_timeframe=execution_timeframe,
+            execution_mode=execution_mode,
+            max_requests_per_minute=max_requests_per_minute,
+            minute_spacing=minute_spacing,
+            guard_result=guard_result,
+        ), 0
+
     plan = market_data_fetch_schedule.build_fetch_schedule(
         pairs=pairs,
         trigger_time=trigger_time,
@@ -141,7 +203,7 @@ def run_scheduled_trigger_batch(
         fxalex_confluence_enabled=fxalex_confluence_enabled,
         news_context_enabled=news_context_enabled,
     )
-    return run_schedule_plan(
+    summary, exit_code = run_schedule_plan(
         plan=plan,
         webhook_schema=webhook_schema,
         skill=skill,
@@ -150,6 +212,10 @@ def run_scheduled_trigger_batch(
         paper_trades_log=paper_trades_log,
         decision_log=decision_log,
     )
+    summary["guard"] = guard_result
+    summary["status"] = "completed"
+    summary["skipped_runs"] = 0
+    return summary, exit_code
 
 
 def emit_output(summary: dict, output_format: str):
@@ -198,6 +264,7 @@ def main():
     parser.add_argument("--paper-trades-log", type=Path, default=engine.PAPER_TRADES_LOG_FILE)
     parser.add_argument("--runs-dir", type=Path, default=automation.AUTOMATION_RUNS_DIR)
     parser.add_argument("--decision-log", type=Path, default=automation.AUTOMATION_DECISIONS_LOG_FILE)
+    parser.add_argument("--disable-run-guard", action="store_true")
     args = parser.parse_args()
 
     webhook_schema = tradingview_webhook.load_json(args.webhook_schema_file)
@@ -216,6 +283,7 @@ def main():
         execution_mode=args.execution_mode,
         max_requests_per_minute=args.max_requests_per_minute,
         minute_spacing=args.minute_spacing,
+        enforce_run_guard=not args.disable_run_guard,
     )
     emit_output(summary, args.format)
     return exit_code
