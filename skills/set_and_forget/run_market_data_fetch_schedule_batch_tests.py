@@ -2,6 +2,7 @@ import json
 import os
 import tempfile
 from copy import deepcopy
+from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 from unittest.mock import patch
@@ -140,6 +141,58 @@ def run_case(case: dict, webhook_schema: dict, skill: dict, decision_schema: dic
         }
 
 
+def assert_missing_trigger_time_defaults_to_current_utc_minute():
+    fixed_trigger_time = datetime(2026, 3, 27, 8, 0, tzinfo=timezone.utc)
+    observed = {}
+
+    def fake_run_schedule_plan(plan, webhook_schema, skill, decision_schema, runs_dir, paper_trades_log, decision_log):
+        observed["plan"] = plan
+        return {
+            "provider": plan["provider"],
+            "adapter": plan["adapter"],
+            "execution_timeframe": plan["execution_timeframe"],
+            "execution_mode": plan["execution_mode"],
+            "request_budget": plan["request_budget"],
+            "schedule": plan["schedule"],
+            "total_runs": 0,
+            "ok_runs": 0,
+            "error_runs": 0,
+            "exit_code": 0,
+        }, 0
+
+    with patch.object(
+        batch_runner.market_data_fetch_schedule,
+        "parse_schedule_timestamp",
+        return_value=fixed_trigger_time,
+    ), patch.object(
+        batch_runner,
+        "run_schedule_plan",
+        side_effect=fake_run_schedule_plan,
+    ):
+        summary, exit_code = batch_runner.run_scheduled_trigger_batch(
+            pairs=["GBPJPY", "EURJPY", "EURGBP"],
+            trigger_time=None,
+            webhook_schema={},
+            skill={},
+            decision_schema={},
+            runs_dir=BASE_DIR / "tmp_runs",
+            paper_trades_log=BASE_DIR / "tmp_paper_trades_log.jsonl",
+            decision_log=BASE_DIR / "tmp_automation_decisions_log.jsonl",
+        )
+
+    assert exit_code == 0, "trigger_time defaulting exit code mismatch"
+    assert summary["status"] == "completed", "trigger_time defaulting status mismatch"
+    assert summary["guard"]["eligible"] is True, "trigger_time defaulting guard mismatch"
+    assert summary["guard"]["trigger_time"] == "2026-03-27T08:00:00Z", "guard trigger time mismatch"
+    assert observed["plan"]["schedule"]["base_trigger_time"] == "2026-03-27T08:00:00Z", "plan trigger time mismatch"
+    return {
+        "id": "scheduled_trigger_batch_defaults_missing_trigger_time",
+        "bucket_count": len(summary["schedule"]["buckets"]),
+        "total_runs": summary["total_runs"],
+        "status": summary["status"],
+    }
+
+
 def main():
     fixtures = load_json(FIXTURES_FILE)
     provider_fixtures = load_json(PROVIDER_FIXTURES_FILE)
@@ -148,10 +201,11 @@ def main():
     decision_schema = engine.load_json(DECISION_SCHEMA_FILE)
 
     results = []
+    results.append(assert_missing_trigger_time_defaults_to_current_utc_minute())
     for case in fixtures["cases"]:
         results.append(run_case(case, webhook_schema, skill, decision_schema, provider_fixtures))
 
-    print(f"PASS {len(results)}/{len(fixtures['cases'])} market data fetch schedule batch scenarios")
+    print(f"PASS {len(results)}/{len(results)} market data fetch schedule batch scenarios")
     for result in results:
         print(
             f"- {result['id']}: bucket_count={result['bucket_count']} "

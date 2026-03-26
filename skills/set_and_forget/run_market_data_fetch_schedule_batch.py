@@ -177,15 +177,18 @@ def run_scheduled_trigger_batch(
     news_context_enabled: bool = False,
     enforce_run_guard: bool = True,
 ):
+    effective_trigger_time = market_data_fetch_schedule.serialize_schedule_timestamp(
+        market_data_fetch_schedule.parse_schedule_timestamp(trigger_time)
+    )
     guard_result = forex_run_guard.evaluate_forex_run_guard(
-        trigger_time=trigger_time,
+        trigger_time=effective_trigger_time,
         execution_timeframe=execution_timeframe,
         pairs=pairs,
     )
     if enforce_run_guard and not guard_result["eligible"]:
         return build_guard_skip_summary(
             pairs=pairs,
-            trigger_time=trigger_time,
+            trigger_time=effective_trigger_time,
             execution_timeframe=execution_timeframe,
             execution_mode=execution_mode,
             max_requests_per_minute=max_requests_per_minute,
@@ -195,7 +198,7 @@ def run_scheduled_trigger_batch(
 
     plan = market_data_fetch_schedule.build_fetch_schedule(
         pairs=pairs,
-        trigger_time=trigger_time,
+        trigger_time=effective_trigger_time,
         execution_timeframe=execution_timeframe,
         execution_mode=execution_mode,
         max_requests_per_minute=max_requests_per_minute,
