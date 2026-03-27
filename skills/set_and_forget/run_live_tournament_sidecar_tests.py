@@ -84,8 +84,35 @@ def assert_enabled_sidecar_calls_tournament_runner():
         write_json(tmp_path / "models.json", {"models": []})
         write_json(tmp_path / "output_schema.json", {"fields": []})
 
-        fake_result = {"status": "completed", "run": {"run_id": "run-456"}}
-        with patch.object(sidecar.openclaw_tournament, "run_tournament", return_value=(fake_result, 0)) as patched:
+        fake_result = {
+            "status": "completed",
+            "run": {"run_id": "run-456"},
+            "primary_payload": {
+                "pair": "EURUSD",
+                "execution_timeframe": "4H",
+                "decision": "WAIT",
+                "confidence_score": 48,
+            },
+            "entries": [
+                {
+                    "model_id": "openrouter/anthropic/claude-opus-4.6",
+                    "model_decision": "BUY",
+                    "model_confidence_score": 66,
+                    "model_summary": "Opus zag trend alignment en confirmation.",
+                    "decision": "WAIT",
+                    "policy_enforced": True,
+                    "summary": "Hard gate enforced.",
+                }
+            ],
+        }
+        with (
+            patch.object(sidecar.openclaw_tournament, "run_tournament", return_value=(fake_result, 0)) as patched,
+            patch.object(
+                sidecar.telegram_notify,
+                "maybe_send_tournament_report_notification",
+                return_value={"sent": True, "status": "sent"},
+            ) as notify_patched,
+        ):
             result, exit_code = sidecar.run_live_tournament_sidecar(
                 feature_snapshot={"meta": {"pair": "EURUSD", "execution_timeframe": "4H", "execution_mode": "paper"}},
                 skill={"skill": "set_and_forget"},
@@ -96,6 +123,8 @@ def assert_enabled_sidecar_calls_tournament_runner():
     assert exit_code == 0, "enabled sidecar should forward successful exit code"
     assert result["status"] == "completed", "enabled sidecar status mismatch"
     assert patched.called, "tournament runner should be invoked when sidecar is enabled"
+    assert notify_patched.called, "completed sidecar runs should send a tournament report notification"
+    assert result["telegram_notification"]["sent"] is True, "notification result should be exposed in sidecar output"
 
 
 def main():
@@ -103,7 +132,7 @@ def main():
     assert_enabled_sidecar_calls_tournament_runner()
     print("PASS 2/2 live tournament sidecar scenarios")
     print("- disabled sidecar refreshes runtime status")
-    print("- enabled sidecar calls tournament runner")
+    print("- enabled sidecar calls tournament runner and reports via telegram")
 
 
 if __name__ == "__main__":

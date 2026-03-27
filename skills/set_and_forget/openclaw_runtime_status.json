@@ -1,0 +1,20 @@
+{
+  "status_version": "1.0",
+  "updated_at": "2026-03-27T11:38:12.774065+00:00",
+  "market_watch": null,
+  "tournament": {
+    "run_state": "idle",
+    "currently_running": false,
+    "updated_at": "2026-03-27T11:38:12.774003+00:00",
+    "started_at": null,
+    "completed_at": null,
+    "last_result_status": null,
+    "last_run_id": null,
+    "pair": null,
+    "execution_timeframe": null,
+    "execution_mode": null,
+    "model_count": 0,
+    "latest_recorded_at": null,
+    "latest_error": null
+  }
+}

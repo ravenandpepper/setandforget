@@ -245,6 +245,8 @@ def run_completed_case():
         assert runtime_status["tournament"]["last_run_id"] == result["run"]["run_id"], "runtime run id mismatch"
         assert all(row["objective_only"] is True for row in log_rows), "all rows must remain objective-only"
         assert all(row["hard_gate_respected"] is True for row in log_rows), "all rows must respect hard gates"
+        assert all("model_decision" in row for row in log_rows), "log rows should preserve raw model decisions"
+        assert all("model_summary" in row for row in log_rows), "log rows should preserve raw model summaries"
         assert sum(1 for row in shadow_rows if row["shadow_trade_opened"]) == 3, (
             "three actionable model decisions should open shadow tickets"
         )
@@ -331,8 +333,10 @@ def run_hard_gate_case():
             entry for entry in result["entries"] if entry["model_id"] == "openrouter/anthropic/claude-opus-4.6"
         )
         assert minimax_entry["decision"] == "WAIT", "Minimax must stay blocked by primary WAIT"
+        assert minimax_entry["model_decision"] == "BUY", "Minimax raw trade intent should remain visible"
         assert minimax_entry["policy_enforced"] is True, "Minimax should be clamped by the hard gate policy"
         assert opus_entry["decision"] == "WAIT", "Opus must stay blocked by primary WAIT"
+        assert opus_entry["model_decision"] == "SELL", "Opus raw trade intent should remain visible"
         assert opus_entry["policy_enforced"] is True, "Opus should also be clamped by the hard gate policy"
         shadow_rows = load_jsonl(tmp_path / "openclaw_shadow_portfolio_log.jsonl")
         minimax_shadow = next(

@@ -53,6 +53,28 @@
       "allowed_values": ["BUY", "SELL", "WAIT", "NO-GO"]
     },
     {
+      "name": "model_decision",
+      "type": "string",
+      "required": false,
+      "allowed_values": ["BUY", "SELL", "WAIT", "NO-GO"]
+    },
+    {
+      "name": "model_confidence_score",
+      "type": "integer",
+      "required": false,
+      "range": [0, 100]
+    },
+    {
+      "name": "model_reason_codes",
+      "type": "array",
+      "required": false
+    },
+    {
+      "name": "model_summary",
+      "type": "string",
+      "required": false
+    },
+    {
       "name": "decision",
       "type": "string",
       "required": true,

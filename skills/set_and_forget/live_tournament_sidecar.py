@@ -3,6 +3,7 @@ from pathlib import Path
 
 import openclaw_tournament
 import runtime_status_artifact
+import telegram_notify
 
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -96,9 +97,14 @@ def run_live_tournament_sidecar(
             "error": str(exc),
         }, 1
 
+    telegram_notification = None
+    if result.get("status") == "completed":
+        telegram_notification = telegram_notify.maybe_send_tournament_report_notification(result)
+
     return {
         "status": "completed" if exit_code == 0 else "error",
         "enabled": True,
         "config_file": str(config_file),
         "result": result,
+        "telegram_notification": telegram_notification,
     }, exit_code

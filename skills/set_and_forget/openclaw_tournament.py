@@ -500,7 +500,14 @@ def apply_hard_gate_policy(model_output: dict, primary_payload: dict):
     }
 
 
-def build_tournament_entry(run_id: str, feature_snapshot: dict, model: dict, primary_payload: dict, evaluated_output: dict):
+def build_tournament_entry(
+    run_id: str,
+    feature_snapshot: dict,
+    model: dict,
+    primary_payload: dict,
+    raw_output: dict,
+    evaluated_output: dict,
+):
     meta = feature_snapshot["meta"]
     return {
         "tournament_entry_version": "1.0",
@@ -512,6 +519,10 @@ def build_tournament_entry(run_id: str, feature_snapshot: dict, model: dict, pri
         "execution_timeframe": meta["execution_timeframe"],
         "execution_mode": meta["execution_mode"],
         "primary_decision": primary_payload["decision"],
+        "model_decision": raw_output["decision"],
+        "model_confidence_score": raw_output["confidence_score"],
+        "model_reason_codes": list(raw_output["reason_codes"]),
+        "model_summary": raw_output["summary"],
         "decision": evaluated_output["decision"],
         "confidence_score": evaluated_output["confidence_score"],
         "objective_only": True,
@@ -678,7 +689,14 @@ def run_tournament(
             run_id=run_id,
         )
         evaluated_output = apply_hard_gate_policy(raw_output, primary_payload)
-        entry = build_tournament_entry(run_id, feature_snapshot, model, primary_payload, evaluated_output)
+        entry = build_tournament_entry(
+            run_id,
+            feature_snapshot,
+            model,
+            primary_payload,
+            raw_output,
+            evaluated_output,
+        )
         entry_errors = validate_tournament_entry(entry, output_schema)
         if entry_errors:
             partial_result = {
