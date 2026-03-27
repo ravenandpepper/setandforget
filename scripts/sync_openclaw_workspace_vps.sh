@@ -53,6 +53,8 @@ For live runtime status questions, check this file first:
 
 Ignore /home/traderops/.openclaw/workspace/RUN_STATE.md for this project.
 The current market focus is forex, not BTC/SOL crypto.
+For questions about which markets/pairs are currently being watched, read $REMOTE_WORKSPACE_ROOT/skills/set_and_forget/scheduled_market_watch.json and answer with the exact configured symbols.
+Do not ask the user to paste RUN_STATE.md, scheduled_market_watch.json, or other files that already exist in this workspace.
 EOF
 
 ssh "$REMOTE_HOST" "cat > '$REMOTE_ACTIVE_PROJECT_FILE'" < "$tmp_file"
@@ -70,11 +72,14 @@ For the active Set & Forget project, use these files instead:
 - $REMOTE_WORKSPACE_ROOT/RUN_STATE.md
 - $REMOTE_WORKSPACE_ROOT/AGENTS.md
 - $REMOTE_WORKSPACE_ROOT/skills/set_and_forget/OPENCLAW_TOURNAMENT.md
+- $REMOTE_WORKSPACE_ROOT/skills/set_and_forget/scheduled_market_watch.json
 
 For live runtime status, check this file first:
 - $REMOTE_RUNTIME_STATUS_MIRROR
 
 If any older AsterDEX content was previously present at $REMOTE_TOP_RUN_STATE_FILE, treat it as deprecated and ignore it.
+For questions about watched markets/pairs, answer with the exact configured symbols from scheduled_market_watch.json.
+Do not ask the user to paste files that already exist in the workspace.
 EOF
 
 ssh "$REMOTE_HOST" "cat > '$REMOTE_TOP_RUN_STATE_FILE'" < "$tmp_file"

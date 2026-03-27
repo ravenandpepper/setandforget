@@ -14,6 +14,8 @@ def build_tournament_row(
     run_id: str,
     reason_codes: list[str],
     primary_decision: str = "BUY",
+    model_decision: str | None = None,
+    policy_enforced: bool = False,
 ):
     return {
         "tournament_entry_version": "1.0",
@@ -27,9 +29,13 @@ def build_tournament_row(
         "confidence_score": confidence_score,
         "reason_codes": reason_codes,
         "summary": "fixture",
+        "model_decision": model_decision or decision,
+        "model_confidence_score": confidence_score,
+        "model_reason_codes": reason_codes,
+        "model_summary": "raw fixture",
         "primary_decision": primary_decision,
         "hard_gate_respected": True,
-        "policy_enforced": False,
+        "policy_enforced": policy_enforced,
         "objective_only": True,
     }
 
@@ -209,6 +215,9 @@ def assert_dashboard_view_model_aggregates_metrics():
     assert result["charts"]["performance_bars"][0]["model_id"] == "openrouter/moonshotai/kimi-k2", (
         "Performance bars should follow leaderboard ordering"
     )
+    assert len(result["candle_briefings"]) == 2, "Recent candle briefings should be grouped by run"
+    assert result["candle_briefings"][0]["run_id"] == "run_b", "Latest candle briefing should come first"
+    assert result["candle_briefings"][0]["trade_count"] == 2, "Both BUY decisions in run_b should count as trades"
 
 
 def assert_dashboard_recent_decisions_and_output_file():
@@ -229,6 +238,8 @@ def assert_dashboard_recent_decisions_and_output_file():
             "run_b",
             ["PULLBACK_NOT_PRESENT"],
             primary_decision="WAIT",
+            model_decision="BUY",
+            policy_enforced=True,
         ),
         build_tournament_row(
             "model_c",
@@ -254,12 +265,19 @@ def assert_dashboard_recent_decisions_and_output_file():
     assert result["recent_decisions"][1]["run_id"] == "run_b", (
         "Second-most-recent decision should be preserved"
     )
+    assert result["candle_briefings"][1]["models"][0]["policy_enforced"] is True, (
+        "Candle briefings should expose hard-gate-enforced decisions"
+    )
+    assert result["candle_briefings"][1]["models"][0]["model_decision"] == "BUY", (
+        "Candle briefings should preserve the raw model trade intent"
+    )
 
     with tempfile.TemporaryDirectory() as tmpdir:
         tmp_path = Path(tmpdir)
         tournament_log = tmp_path / "openclaw_tournament_log.jsonl"
         settlement_log = tmp_path / "openclaw_shadow_portfolio_settlements.jsonl"
         reflection_log = tmp_path / "openclaw_model_reflection_snapshots.jsonl"
+        runtime_status_file = tmp_path / "openclaw_runtime_status.json"
         output_file = tmp_path / "openclaw_tournament_dashboard_view_model.json"
         tournament_log.write_text(
             "".join(json.dumps(row) + "\n" for row in tournament_rows),
@@ -267,6 +285,26 @@ def assert_dashboard_recent_decisions_and_output_file():
         )
         settlement_log.write_text("", encoding="utf-8")
         reflection_log.write_text("", encoding="utf-8")
+        runtime_status_file.write_text(
+            json.dumps(
+                {
+                    "market_watch": {
+                        "status": "skipped_by_guard",
+                        "trigger_time": "2026-03-27T14:00:00Z",
+                        "guard": {
+                            "trigger_time": "2026-03-27T14:00:00Z",
+                            "skip_reason_code": "H4_NOT_CLOSED",
+                            "summary": "De markt is open, maar dit is geen H4 close-moment in UTC.",
+                        },
+                    },
+                    "tournament": {
+                        "run_state": "idle",
+                    },
+                },
+                indent=2,
+            ),
+            encoding="utf-8",
+        )
 
         args = [
             "tournament_dashboard_view_model.py",
@@ -276,6 +314,8 @@ def assert_dashboard_recent_decisions_and_output_file():
             str(settlement_log),
             "--reflection-log",
             str(reflection_log),
+            "--runtime-status-file",
+            str(runtime_status_file),
             "--output-file",
             str(output_file),
         ]
@@ -289,15 +329,45 @@ def assert_dashboard_recent_decisions_and_output_file():
         assert exit_code == 0, "CLI entrypoint should exit cleanly"
         payload = json.loads(output_file.read_text(encoding="utf-8"))
         assert payload["overview"]["model_count"] == 3, "CLI should write the built dashboard payload"
+        assert payload["live_status"]["state"] == "has_data", "Live status should report data when rows exist"
+
+
+def assert_dashboard_live_status_explains_empty_today():
+    runtime_status = {
+        "market_watch": {
+            "status": "skipped_by_guard",
+            "trigger_time": "2026-03-27T14:00:00Z",
+            "guard": {
+                "trigger_time": "2026-03-27T14:00:00Z",
+                "skip_reason_code": "H4_NOT_CLOSED",
+                "summary": "De markt is open, maar dit is geen H4 close-moment in UTC.",
+            },
+        },
+        "tournament": {
+            "run_state": "idle",
+        },
+    }
+    result = tournament_dashboard_view_model.build_dashboard_view_model(
+        tournament_rows=[],
+        settlement_rows=[],
+        reflection_rows=[],
+        runtime_status=runtime_status,
+    )
+
+    assert result["live_status"]["state"] == "waiting_for_h4_close", "Empty dashboard should explain the H4 wait state"
+    assert "Nog geen 4H candle-run" in result["live_status"]["headline"], "Empty dashboard headline mismatch"
+    assert "Volgende H4-close" in result["live_status"]["detail"], "Next H4-close should be surfaced"
 
 
 def main():
     assert_dashboard_view_model_aggregates_metrics()
     assert_dashboard_recent_decisions_and_output_file()
+    assert_dashboard_live_status_explains_empty_today()
 
-    print("PASS 2/2 tournament dashboard view model scenarios")
+    print("PASS 3/3 tournament dashboard view model scenarios")
     print("- tournament_dashboard_view_model_aggregates_leaderboard_and_charts: metrics_ok=True")
     print("- tournament_dashboard_view_model_writes_recent_decisions_artifact: artifact_ok=True")
+    print("- tournament_dashboard_view_model_explains_empty_h4_wait_state: live_status_ok=True")
 
 
 if __name__ == "__main__":

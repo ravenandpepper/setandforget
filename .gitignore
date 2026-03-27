@@ -3,7 +3,14 @@ __pycache__/
 *.pyc
 .env
 .env.*
+.claude/worktrees/
 
 skills/set_and_forget/paper_trades_log.jsonl
 skills/set_and_forget/automation_decisions_log.jsonl
 skills/set_and_forget/automation_runs/
+skills/set_and_forget/archive_2026-03-26_test_data/
+skills/set_and_forget/openclaw_model_reflection_snapshots.jsonl
+skills/set_and_forget/openclaw_shadow_portfolio_log.jsonl
+skills/set_and_forget/openclaw_shadow_portfolio_settlements.jsonl
+skills/set_and_forget/openclaw_tournament_dashboard_view_model.json
+skills/set_and_forget/openclaw_tournament_log.jsonl

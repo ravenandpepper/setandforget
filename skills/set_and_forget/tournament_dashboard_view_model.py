@@ -1,7 +1,7 @@
 import argparse
 import json
 from collections import defaultdict
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 
@@ -9,6 +9,7 @@ BASE_DIR = Path(__file__).resolve().parent
 DEFAULT_TOURNAMENT_LOG_FILE = BASE_DIR / "openclaw_tournament_log.jsonl"
 DEFAULT_SETTLEMENT_LOG_FILE = BASE_DIR / "openclaw_shadow_portfolio_settlements.jsonl"
 DEFAULT_REFLECTION_LOG_FILE = BASE_DIR / "openclaw_model_reflection_snapshots.jsonl"
+DEFAULT_RUNTIME_STATUS_FILE = BASE_DIR / "openclaw_runtime_status.json"
 DEFAULT_OUTPUT_FILE = BASE_DIR / "openclaw_tournament_dashboard_view_model.json"
 DEFAULT_MODEL_BANKROLL_EUR = 500.0
 
@@ -35,8 +36,32 @@ def load_json_rows(path: Path):
     return rows
 
 
+def load_json_object(path: Path):
+    if not path.exists():
+        return None
+    text = path.read_text(encoding="utf-8").strip()
+    if not text:
+        return None
+    payload = json.loads(text)
+    if not isinstance(payload, dict):
+        raise ValueError(f"{path} must contain a JSON object")
+    return payload
+
+
 def timestamp_now():
     return datetime.now(UTC).isoformat()
+
+
+def parse_timestamp(value: str | None):
+    if not isinstance(value, str) or not value.strip():
+        return None
+    token = value.strip()
+    if token.endswith("Z"):
+        token = token[:-1] + "+00:00"
+    try:
+        return datetime.fromisoformat(token)
+    except ValueError:
+        return None
 
 
 def round_or_none(value, digits=4):
@@ -88,6 +113,139 @@ def build_settlement_index(settlements: list[dict]):
         if previous is None or row.get("settled_at", "") >= previous.get("settled_at", ""):
             latest[key] = row
     return latest
+
+
+def is_actionable_decision(decision: str | None):
+    return decision in {"BUY", "SELL"}
+
+
+def build_candle_briefings(tournament_rows: list[dict], *, recent_limit: int = 8):
+    rows_by_run = defaultdict(list)
+    for row in tournament_rows:
+        run_id = row.get("run_id")
+        if isinstance(run_id, str) and run_id:
+            rows_by_run[run_id].append(row)
+
+    grouped_runs = []
+    for run_id, rows in rows_by_run.items():
+        ordered_rows = sort_by_time(rows, "recorded_at")
+        latest_row = ordered_rows[-1]
+        grouped_runs.append(
+            {
+                "run_id": run_id,
+                "pair": latest_row.get("pair"),
+                "execution_timeframe": latest_row.get("execution_timeframe"),
+                "execution_mode": latest_row.get("execution_mode"),
+                "primary_decision": latest_row.get("primary_decision"),
+                "recorded_at": latest_row.get("recorded_at"),
+                "model_count": len(ordered_rows),
+                "trade_count": sum(1 for item in ordered_rows if is_actionable_decision(item.get("decision"))),
+                "blocked_trade_count": sum(1 for item in ordered_rows if item.get("policy_enforced") is True),
+                "models": [
+                    {
+                        "model_id": item.get("model_id"),
+                        "display_name": str(item.get("model_id", "")).split("/")[-1] or item.get("model_id"),
+                        "decision": item.get("decision"),
+                        "confidence_score": item.get("confidence_score"),
+                        "reason_codes": item.get("reason_codes") or [],
+                        "summary": item.get("summary"),
+                        "model_decision": item.get("model_decision", item.get("decision")),
+                        "model_confidence_score": item.get("model_confidence_score", item.get("confidence_score")),
+                        "model_reason_codes": item.get("model_reason_codes", item.get("reason_codes") or []),
+                        "model_summary": item.get("model_summary", item.get("summary")),
+                        "policy_enforced": bool(item.get("policy_enforced")),
+                        "hard_gate_respected": bool(item.get("hard_gate_respected")),
+                        "trade_opened": is_actionable_decision(item.get("decision")),
+                        "recorded_at": item.get("recorded_at"),
+                    }
+                    for item in ordered_rows
+                ],
+            }
+        )
+
+    grouped_runs = sorted(
+        grouped_runs,
+        key=lambda item: (item.get("recorded_at", ""), item.get("run_id", "")),
+        reverse=True,
+    )
+    return grouped_runs[:recent_limit]
+
+
+def format_runtime_label(moment: datetime | None):
+    if moment is None:
+        return None
+    return moment.astimezone(UTC).strftime("%Y-%m-%d %H:%M UTC")
+
+
+def next_h4_close(trigger_time: str | None):
+    moment = parse_timestamp(trigger_time)
+    if moment is None:
+        return None
+    moment = moment.astimezone(UTC)
+    hours_mod = moment.hour % 4
+    if hours_mod == 0 and moment.minute == 0 and moment.second == 0 and moment.microsecond == 0:
+        return moment
+    return moment.replace(minute=0, second=0, microsecond=0) + timedelta(hours=(4 - hours_mod))
+
+
+def build_live_status(runtime_status: dict | None, tournament_rows: list[dict]):
+    market_watch = (runtime_status or {}).get("market_watch") or {}
+    tournament = (runtime_status or {}).get("tournament") or {}
+    latest_entry = sort_by_time(tournament_rows, "recorded_at")[-1] if tournament_rows else None
+    trigger_time = ((market_watch.get("guard") or {}).get("trigger_time")) or market_watch.get("trigger_time")
+    next_close = next_h4_close(trigger_time)
+
+    if latest_entry is not None:
+        return {
+            "state": "has_data",
+            "headline": "Tournament-data beschikbaar.",
+            "detail": (
+                f"Laatste modelrun: {latest_entry.get('pair', 'unknown')} op "
+                f"{format_runtime_label(parse_timestamp(latest_entry.get('recorded_at')))}."
+            ),
+            "last_trigger_time": trigger_time,
+            "next_h4_close_utc": next_close.isoformat() if next_close else None,
+        }
+
+    skip_reason = (market_watch.get("guard") or {}).get("skip_reason_code")
+    if market_watch.get("status") == "skipped_by_guard" and skip_reason == "H4_NOT_CLOSED":
+        return {
+            "state": "waiting_for_h4_close",
+            "headline": "Nog geen 4H candle-run voor 27 maart 2026.",
+            "detail": (
+                f"Laatste check was {format_runtime_label(parse_timestamp(trigger_time))}; die is overgeslagen omdat "
+                f"dit geen H4-close was. Volgende H4-close: {format_runtime_label(next_close)}."
+            ),
+            "last_trigger_time": trigger_time,
+            "next_h4_close_utc": next_close.isoformat() if next_close else None,
+        }
+
+    if market_watch.get("status") == "skipped_by_guard":
+        summary = (market_watch.get("guard") or {}).get("summary") or "Run guard blokkeerde de laatste check."
+        return {
+            "state": "guard_blocked",
+            "headline": "Nog geen tournament-data voor vandaag.",
+            "detail": summary,
+            "last_trigger_time": trigger_time,
+            "next_h4_close_utc": next_close.isoformat() if next_close else None,
+        }
+
+    if tournament.get("run_state") == "running":
+        return {
+            "state": "running",
+            "headline": "Tournament-run bezig.",
+            "detail": "De modellen zijn nu bezig met evalueren voor de laatste candle.",
+            "last_trigger_time": trigger_time,
+            "next_h4_close_utc": next_close.isoformat() if next_close else None,
+        }
+
+    return {
+        "state": "idle",
+        "headline": "Nog geen tournament-data voor vandaag.",
+        "detail": "De eerstvolgende echte 4H candle-run zal het dashboard vullen zodra de sidecar schrijft.",
+        "last_trigger_time": trigger_time,
+        "next_h4_close_utc": next_close.isoformat() if next_close else None,
+    }
 
 
 def calculate_model_metrics(model_id: str, entries: list[dict], settlement_index: dict, latest_reflection: dict | None):
@@ -203,6 +361,7 @@ def build_dashboard_view_model(
     tournament_rows: list[dict],
     settlement_rows: list[dict],
     reflection_rows: list[dict],
+    runtime_status: dict | None = None,
     *,
     recent_limit: int = 12,
 ):
@@ -227,6 +386,7 @@ def build_dashboard_view_model(
 
     recent_decisions = sort_by_time(tournament_rows, "recorded_at")[-recent_limit:]
     recent_decisions.reverse()
+    candle_briefings = build_candle_briefings(tournament_rows, recent_limit=recent_limit)
 
     equity_curves = [
         {
@@ -264,6 +424,8 @@ def build_dashboard_view_model(
             "equity_curves": equity_curves,
             "performance_bars": performance_bars,
         },
+        "live_status": build_live_status(runtime_status, tournament_rows),
+        "candle_briefings": candle_briefings,
         "recent_decisions": recent_decisions,
     }
 
@@ -273,13 +435,15 @@ def main():
     parser.add_argument("--tournament-log", type=Path, default=DEFAULT_TOURNAMENT_LOG_FILE)
     parser.add_argument("--settlement-log", type=Path, default=DEFAULT_SETTLEMENT_LOG_FILE)
     parser.add_argument("--reflection-log", type=Path, default=DEFAULT_REFLECTION_LOG_FILE)
+    parser.add_argument("--runtime-status-file", type=Path, default=DEFAULT_RUNTIME_STATUS_FILE)
     parser.add_argument("--output-file", type=Path, default=DEFAULT_OUTPUT_FILE)
     args = parser.parse_args()
 
     tournament_rows = load_json_rows(args.tournament_log)
     settlement_rows = load_json_rows(args.settlement_log)
     reflection_rows = load_json_rows(args.reflection_log)
-    result = build_dashboard_view_model(tournament_rows, settlement_rows, reflection_rows)
+    runtime_status = load_json_object(args.runtime_status_file)
+    result = build_dashboard_view_model(tournament_rows, settlement_rows, reflection_rows, runtime_status)
     args.output_file.write_text(json.dumps(result, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     print(json.dumps(result, indent=2, ensure_ascii=False))
     return 0

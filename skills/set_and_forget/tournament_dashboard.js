@@ -303,6 +303,32 @@
     });
   }
 
+  function fmtShortDate(value) {
+    if (!value) {
+      return "";
+    }
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) {
+      return String(value);
+    }
+    return parsed.toLocaleString(undefined, {
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
+
+  function decisionPillStyle(decision) {
+    if (decision === "BUY") {
+      return "background:rgba(0,255,170,0.12);color:var(--green);border:1px solid rgba(0,255,170,0.2)";
+    }
+    if (decision === "SELL") {
+      return "background:rgba(255,77,106,0.12);color:var(--red);border:1px solid rgba(255,77,106,0.2)";
+    }
+    return "background:rgba(77,159,255,0.12);color:var(--blue);border:1px solid rgba(77,159,255,0.2)";
+  }
+
   function pnlClass(value) {
     const parsed = num(value);
     if (parsed === null) {
@@ -479,6 +505,36 @@
     document.getElementById("generated-at").textContent = data.generated_at
       ? `Updated ${fmtDate(data.generated_at)}`
       : "";
+  }
+
+  function renderLiveStatus(data) {
+    const element = document.getElementById("live-status");
+    const status = data.live_status || {};
+    const state = status.state || "idle";
+    const stateClass =
+      state === "has_data"
+        ? "live-status-good"
+        : state === "waiting_for_h4_close"
+          ? "live-status-wait"
+          : state === "running"
+            ? "live-status-running"
+            : "live-status-idle";
+
+    const nextClose = status.next_h4_close_utc ? fmtDate(status.next_h4_close_utc) : "n/a";
+    const lastTrigger = status.last_trigger_time ? fmtDate(status.last_trigger_time) : "n/a";
+
+    element.innerHTML = `
+      <div class="live-status-shell ${stateClass}">
+        <div class="live-status-copy">
+          <div class="live-status-headline">${esc(status.headline || "Geen live status beschikbaar.")}</div>
+          <div class="live-status-detail">${esc(status.detail || "Het dashboard wacht op een nieuwe tournament-run.")}</div>
+        </div>
+        <div class="live-status-meta">
+          <div class="live-status-item"><span class="live-status-label">Last Check</span><span class="live-status-value">${esc(lastTrigger)}</span></div>
+          <div class="live-status-item"><span class="live-status-label">Next H4 Close</span><span class="live-status-value">${esc(nextClose)}</span></div>
+        </div>
+      </div>
+    `;
   }
 
   function renderLeaderboard(data) {
@@ -791,12 +847,7 @@
     element.innerHTML = items
       .map((item) => {
         const aligned = item.primary_decision ? item.decision === item.primary_decision : null;
-        const pillStyle =
-          item.decision === "BUY"
-            ? "background:rgba(0,255,170,0.12);color:var(--green);border:1px solid rgba(0,255,170,0.2)"
-            : item.decision === "SELL"
-              ? "background:rgba(255,77,106,0.12);color:var(--red);border:1px solid rgba(255,77,106,0.2)"
-              : "background:rgba(77,159,255,0.12);color:var(--blue);border:1px solid rgba(77,159,255,0.2)";
+        const pillStyle = decisionPillStyle(item.decision);
         const reasons = (item.reason_codes || []).map((reason) => `<span class="reason-tag">${esc(reason)}</span>`).join("");
 
         return `
@@ -816,6 +867,111 @@
         `;
       })
       .join("");
+  }
+
+  function renderCandleBriefings(data) {
+    const element = document.getElementById("candle-briefings");
+    const items = data.candle_briefings || [];
+    if (!items.length) {
+      element.innerHTML = '<div class="empty-state">Nog geen 4H candle-briefings beschikbaar.</div>';
+      return;
+    }
+
+    const tabs = items
+      .map((item, index) => {
+        const active = index === 0 ? "is-active" : "";
+        const label = `${item.pair || "PAIR"} · ${fmtShortDate(item.recorded_at)}`;
+        return `
+          <button class="candle-tab ${active}" type="button" data-candle-tab="${index}">
+            <span class="candle-tab-title">${esc(label)}</span>
+            <span class="candle-tab-meta">${esc(`Primary ${item.primary_decision || "n/a"} · trades ${fmtCount(item.trade_count)}`)}</span>
+          </button>
+        `;
+      })
+      .join("");
+
+    const panels = items
+      .map((item, index) => {
+        const active = index === 0 ? "is-active" : "";
+        const models = (item.models || [])
+          .map((model) => {
+            const tradeState = model.policy_enforced
+              ? "geen trade"
+              : model.trade_opened
+                ? "trade gemaakt"
+                : "geen trade";
+            const summary = model.policy_enforced
+              ? `Het model wilde ${model.model_decision || model.decision}, maar de Set & Forget hard gate blokkeerde die trade.`
+              : model.model_summary || model.summary || "Geen toelichting.";
+            const finalSummary = model.policy_enforced
+              ? model.model_summary || model.summary || "Geen extra toelichting."
+              : model.summary && model.summary !== model.model_summary
+                ? model.summary
+                : "";
+            const reasons = (model.model_reason_codes || model.reason_codes || [])
+              .map((reason) => `<span class="reason-tag">${esc(reason)}</span>`)
+              .join("");
+
+            return `
+              <details class="candle-model-card">
+                <summary class="candle-model-summary">
+                  <div class="candle-model-head">
+                    <span class="candle-model-name">${esc(modelName(model.model_id, model.display_name))}</span>
+                    <span class="dec-pill" style="${decisionPillStyle(model.policy_enforced ? "WAIT" : model.decision)}">${esc(tradeState)}</span>
+                  </div>
+                  <div class="candle-model-sub">
+                    <span>${esc(`Model ${model.model_decision || model.decision}`)}</span>
+                    <span>${esc(`Final ${model.decision || "WAIT"}`)}</span>
+                    <span>${esc(`Confidence ${fmtCount(model.model_confidence_score)}`)}</span>
+                  </div>
+                </summary>
+                <div class="candle-model-body">
+                  <p class="candle-model-copy">${esc(summary)}</p>
+                  ${finalSummary ? `<p class="candle-model-copy candle-model-copy-muted">${esc(finalSummary)}</p>` : ""}
+                  <div class="candle-model-meta">
+                    <div class="dec-meta-item"><span class="dec-meta-label">Time</span><span class="dec-meta-value">${esc(fmtDate(model.recorded_at))}</span></div>
+                    <div class="dec-meta-item"><span class="dec-meta-label">Hard Gate</span><span class="dec-meta-value ${model.policy_enforced ? "danger" : "good"}">${esc(model.policy_enforced ? "Blocked" : "Clear")}</span></div>
+                  </div>
+                  ${reasons ? `<div class="dec-reasons">${reasons}</div>` : ""}
+                </div>
+              </details>
+            `;
+          })
+          .join("");
+
+        return `
+          <section class="candle-panel ${active}" data-candle-panel="${index}">
+            <div class="candle-panel-top">
+              <div>
+                <div class="candle-panel-title">${esc(`${item.pair || "PAIR"} · ${item.execution_timeframe || "4H"}`)}</div>
+                <div class="candle-panel-subtitle">${esc(`Closed ${fmtDate(item.recorded_at)} · ${item.model_count || 0} models`)}</div>
+              </div>
+              <div class="candle-panel-stats">
+                <span class="candle-panel-chip">${esc(`Primary ${item.primary_decision || "n/a"}`)}</span>
+                <span class="candle-panel-chip">${esc(`Trades ${fmtCount(item.trade_count)}`)}</span>
+                <span class="candle-panel-chip">${esc(`Blocked ${fmtCount(item.blocked_trade_count)}`)}</span>
+              </div>
+            </div>
+            <div class="candle-model-list">${models}</div>
+          </section>
+        `;
+      })
+      .join("");
+
+    element.innerHTML = `
+      <div class="candle-tabs">${tabs}</div>
+      <div class="candle-panels">${panels}</div>
+    `;
+
+    const buttons = element.querySelectorAll("[data-candle-tab]");
+    const panelsEls = element.querySelectorAll("[data-candle-panel]");
+    buttons.forEach((button) => {
+      button.addEventListener("click", () => {
+        const target = button.getAttribute("data-candle-tab");
+        buttons.forEach((item) => item.classList.toggle("is-active", item === button));
+        panelsEls.forEach((panel) => panel.classList.toggle("is-active", panel.getAttribute("data-candle-panel") === target));
+      });
+    });
   }
 
   async function loadViewModel() {
@@ -841,6 +997,7 @@
   async function main() {
     const { data, label } = await loadViewModel();
     renderStatus(data, label);
+    renderLiveStatus(data);
     renderTicker(data);
     renderLeaderboard(data);
     renderEquityLegend(data);
@@ -850,6 +1007,7 @@
     renderPerfBars(data);
     renderPairs(data);
     renderDecisions(data);
+    renderCandleBriefings(data);
   }
 
   main();

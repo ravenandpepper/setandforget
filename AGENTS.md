@@ -6,6 +6,8 @@ This project builds a Set & Forget trading engine for paper trading and later st
 ## Operating context
 1. Read `RUN_STATE.md` first for the current operational state, tournament meaning, start conditions, and notification expectations.
 2. Use `AGENTS.md` for stable project rules and `RUN_STATE.md` for current state.
+3. For questions about currently monitored markets or pairs, read `skills/set_and_forget/scheduled_market_watch.json` and answer with the exact configured symbols.
+4. Do not ask the user to paste files that already exist in this workspace when the answer can be read directly from local project files.
 
 ## Core architecture
 1. Primary strategy: Set & Forget Swing Strategy

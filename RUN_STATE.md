@@ -56,6 +56,9 @@
 - Preferred wording when FX is open but no explicit run signal exists: `De forexmarkt is open. Het toernooi kan nu starten, maar het is niet bevestigd als al draaiend.`
 - Preferred wording when FX is closed: `De forexmarkt is gesloten. Het toernooi is nu niet startklaar.`
 - Preferred wording when FX is open and a run signal exists: `De forexmarkt is open en het toernooi draait al.`
+- For "Welke markten/pairs bekijken we nu?" or equivalent: read `skills/set_and_forget/scheduled_market_watch.json` and answer with the exact configured symbols, for example `We kijken nu naar EURJPY en EURGBP op 4H in paper mode.`
+- Do not answer a market/pairs question with only `forex` when concrete configured symbols are available in the workspace.
+- Do not ask the user to paste `RUN_STATE.md`, `scheduled_market_watch.json`, or other workspace files that Lucy/OpenClaw can already read directly.
 - Do not collapse `ready to start` into `not started yet` without also stating whether the market is open right now.
 - Keep the answer concise. Do not append a filesystem audit summary unless the user explicitly asks what you checked.
 - If the user asks only for status, do not offer to start the tournament and do not offer to set a notification unless the user explicitly asks for one of those actions.
@@ -72,4 +75,4 @@
 ## Short orchestrator prompt
 Use this as the short instruction for Lucy/OpenClaw:
 
-`For this workspace, always read RUN_STATE.md and AGENTS.md before asking what "the tournament" means. In this project, "the tournament" refers to the OpenClaw multi-model Set & Forget paper tournament unless the user explicitly says otherwise. For live status, prefer the runtime status artifact over static docs. Distinguish clearly between ready to start and already started, answer status questions with both market-open status and confirmed-running status, and keep status-only replies concise with no unsolicited next-step offers.`
+`For this workspace, always read RUN_STATE.md and AGENTS.md before asking what "the tournament" means. In this project, "the tournament" refers to the OpenClaw multi-model Set & Forget paper tournament unless the user explicitly says otherwise. For live status, prefer the runtime status artifact over static docs. Distinguish clearly between ready to start and already started, answer status questions with both market-open status and confirmed-running status, and keep status-only replies concise with no unsolicited next-step offers. For questions about which markets are being watched, read skills/set_and_forget/scheduled_market_watch.json and answer with the exact configured symbols instead of generic `forex`, and never ask the user to paste workspace files that are already readable.`
