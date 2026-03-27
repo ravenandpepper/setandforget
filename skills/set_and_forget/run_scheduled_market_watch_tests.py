@@ -109,6 +109,8 @@ def assert_run_scheduled_market_watch_forwards_config():
                 skill_file=skill_file,
                 decision_schema_file=decision_schema_file,
                 enforce_run_guard=True,
+                runtime_status_file=tmp_path / "openclaw_runtime_status.json",
+                tournament_sidecar_config_file=tmp_path / "live_tournament_sidecar.json",
             )
 
     assert exit_code == 0, "exit code mismatch"

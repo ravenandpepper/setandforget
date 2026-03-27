@@ -2,6 +2,7 @@ import argparse
 from pathlib import Path
 
 import market_data_fetch_schedule
+import runtime_status_artifact
 import run_market_data_fetch_schedule_batch as batch_runner
 import run_set_and_forget as engine
 import run_structured_automation as automation
@@ -10,6 +11,7 @@ import tradingview_webhook
 
 BASE_DIR = Path(__file__).resolve().parent
 DEFAULT_CONFIG_FILE = BASE_DIR / "scheduled_market_watch.json"
+DEFAULT_RUNTIME_STATUS_FILE = BASE_DIR / "openclaw_runtime_status.json"
 
 
 def load_runtime_config(path: Path):
@@ -41,6 +43,8 @@ def run_scheduled_market_watch(
     skill_file: Path,
     decision_schema_file: Path,
     enforce_run_guard: bool,
+    runtime_status_file: Path,
+    tournament_sidecar_config_file: Path,
 ):
     config = load_runtime_config(config_file)
     webhook_schema = tradingview_webhook.load_json(webhook_schema_file)
@@ -62,7 +66,18 @@ def run_scheduled_market_watch(
         fxalex_confluence_enabled=config["fxalex_confluence_enabled"],
         news_context_enabled=config["news_context_enabled"],
         enforce_run_guard=enforce_run_guard,
+        tournament_sidecar_config_file=tournament_sidecar_config_file,
     )
+    if summary.get("status") == "skipped_by_guard":
+        runtime_status_artifact.update_status(
+            runtime_status_file,
+            market_watch=runtime_status_artifact.build_market_watch_skipped_status(summary),
+        )
+    else:
+        runtime_status_artifact.update_status(
+            runtime_status_file,
+            market_watch=runtime_status_artifact.build_market_watch_status(summary),
+        )
     batch_runner.emit_output(summary, output_format)
     return summary, exit_code
 
@@ -78,6 +93,8 @@ def main():
     parser.add_argument("--paper-trades-log", type=Path, default=engine.PAPER_TRADES_LOG_FILE)
     parser.add_argument("--runs-dir", type=Path, default=automation.AUTOMATION_RUNS_DIR)
     parser.add_argument("--decision-log", type=Path, default=automation.AUTOMATION_DECISIONS_LOG_FILE)
+    parser.add_argument("--runtime-status-file", type=Path, default=DEFAULT_RUNTIME_STATUS_FILE)
+    parser.add_argument("--tournament-sidecar-config-file", type=Path, default=tradingview_webhook.TOURNAMENT_SIDECAR_CONFIG_FILE)
     parser.add_argument("--disable-run-guard", action="store_true")
     args = parser.parse_args()
 
@@ -92,6 +109,8 @@ def main():
         skill_file=args.skill_file,
         decision_schema_file=args.decision_schema_file,
         enforce_run_guard=not args.disable_run_guard,
+        runtime_status_file=args.runtime_status_file,
+        tournament_sidecar_config_file=args.tournament_sidecar_config_file,
     )
     return exit_code
 

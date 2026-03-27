@@ -59,6 +59,8 @@ def run_server_case(alert_payload: dict, path: str):
         paper_trades_log = tmp_path / "paper_trades_log.jsonl"
         decision_log = tmp_path / "automation_decisions_log.jsonl"
         runs_dir = tmp_path / "automation_runs"
+        tournament_sidecar_config_file = tmp_path / "live_tournament_sidecar.json"
+        tournament_sidecar_config_file.write_text('{"enabled": false}\n', encoding="utf-8")
 
         server, config = server_module.serve(
             host="127.0.0.1",
@@ -72,6 +74,7 @@ def run_server_case(alert_payload: dict, path: str):
             paper_trades_log=paper_trades_log,
             runs_dir=runs_dir,
             decision_log=decision_log,
+            tournament_sidecar_config_file=tournament_sidecar_config_file,
         )
         host, port = server.server_address
         thread = threading.Thread(target=server.serve_forever, daemon=True)

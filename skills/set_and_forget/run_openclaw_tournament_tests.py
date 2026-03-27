@@ -210,6 +210,7 @@ def run_completed_case():
             shadow_portfolio_log=shadow_portfolio_log,
             settlement_log=settlement_log,
             reflection_log=reflection_log,
+            runtime_status_file=tmp_path / "openclaw_runtime_status.json",
             settlement_candles_file=MARKET_FIXTURES_FILE,
             run_label="test",
             model_decision_runner=fake_runner,
@@ -235,10 +236,13 @@ def run_completed_case():
         shadow_rows = load_jsonl(shadow_portfolio_log)
         settlement_rows = load_jsonl(settlement_log)
         reflection_rows = load_jsonl(reflection_log)
+        runtime_status = load_json(tmp_path / "openclaw_runtime_status.json")
         assert len(log_rows) == 4, "tournament log should contain one row per model"
         assert len(shadow_rows) == 4, "shadow portfolio log should contain one row per model"
         assert len(settlement_rows) == 4, "settlement log should contain one row per model"
         assert len(reflection_rows) >= 4, "reflection log should append one row per model snapshot"
+        assert runtime_status["tournament"]["run_state"] == "completed", "runtime status should mark tournament complete"
+        assert runtime_status["tournament"]["last_run_id"] == result["run"]["run_id"], "runtime run id mismatch"
         assert all(row["objective_only"] is True for row in log_rows), "all rows must remain objective-only"
         assert all(row["hard_gate_respected"] is True for row in log_rows), "all rows must respect hard gates"
         assert sum(1 for row in shadow_rows if row["shadow_trade_opened"]) == 3, (
@@ -312,6 +316,7 @@ def run_hard_gate_case():
             shadow_portfolio_log=tmp_path / "openclaw_shadow_portfolio_log.jsonl",
             settlement_log=tmp_path / "openclaw_shadow_portfolio_settlements.jsonl",
             reflection_log=tmp_path / "openclaw_model_reflection_snapshots.jsonl",
+            runtime_status_file=tmp_path / "openclaw_runtime_status.json",
             run_label="hard-gate",
             model_decision_runner=fake_runner,
         )

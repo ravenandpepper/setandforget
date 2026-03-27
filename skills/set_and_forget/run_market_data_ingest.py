@@ -53,6 +53,7 @@ def main():
     parser.add_argument("--paper-trades-log", type=Path, default=engine.PAPER_TRADES_LOG_FILE)
     parser.add_argument("--runs-dir", type=Path, default=automation.AUTOMATION_RUNS_DIR)
     parser.add_argument("--decision-log", type=Path, default=automation.AUTOMATION_DECISIONS_LOG_FILE)
+    parser.add_argument("--tournament-sidecar-config-file", type=Path, default=None)
     args = parser.parse_args()
 
     ingest_payload = market_data_ingest.load_json(args.payload_file)
@@ -72,6 +73,7 @@ def main():
         runs_dir=args.runs_dir,
         paper_trades_log=args.paper_trades_log,
         decision_log=args.decision_log,
+        tournament_sidecar_config_file=args.tournament_sidecar_config_file,
     )
     emit_output(result, args.format)
     return exit_code

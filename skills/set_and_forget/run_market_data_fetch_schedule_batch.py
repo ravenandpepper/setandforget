@@ -62,6 +62,7 @@ def run_schedule_plan(
     runs_dir: Path,
     paper_trades_log: Path,
     decision_log: Path,
+    tournament_sidecar_config_file: Path | None = None,
 ):
     bucket_results = []
     exit_code = 0
@@ -80,6 +81,7 @@ def run_schedule_plan(
                 runs_dir=runs_dir,
                 paper_trades_log=paper_trades_log,
                 decision_log=decision_log,
+                tournament_sidecar_config_file=tournament_sidecar_config_file,
             )
             run_results.append(build_run_summary(trigger_request, result, run_exit_code))
             total_runs += 1
@@ -176,6 +178,7 @@ def run_scheduled_trigger_batch(
     fxalex_confluence_enabled: bool = False,
     news_context_enabled: bool = False,
     enforce_run_guard: bool = True,
+    tournament_sidecar_config_file: Path | None = None,
 ):
     effective_trigger_time = market_data_fetch_schedule.serialize_schedule_timestamp(
         market_data_fetch_schedule.parse_schedule_timestamp(trigger_time)
@@ -214,6 +217,7 @@ def run_scheduled_trigger_batch(
         runs_dir=runs_dir,
         paper_trades_log=paper_trades_log,
         decision_log=decision_log,
+        tournament_sidecar_config_file=tournament_sidecar_config_file,
     )
     summary["guard"] = guard_result
     summary["status"] = "completed"
@@ -274,6 +278,7 @@ def main():
     parser.add_argument("--paper-trades-log", type=Path, default=engine.PAPER_TRADES_LOG_FILE)
     parser.add_argument("--runs-dir", type=Path, default=automation.AUTOMATION_RUNS_DIR)
     parser.add_argument("--decision-log", type=Path, default=automation.AUTOMATION_DECISIONS_LOG_FILE)
+    parser.add_argument("--tournament-sidecar-config-file", type=Path, default=tradingview_webhook.TOURNAMENT_SIDECAR_CONFIG_FILE)
     parser.add_argument("--disable-run-guard", action="store_true")
     args = parser.parse_args()
 
@@ -294,6 +299,7 @@ def main():
         max_requests_per_minute=args.max_requests_per_minute,
         minute_spacing=args.minute_spacing,
         enforce_run_guard=not args.disable_run_guard,
+        tournament_sidecar_config_file=args.tournament_sidecar_config_file,
     )
     emit_output(summary, args.format)
     return exit_code

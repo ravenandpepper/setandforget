@@ -12,6 +12,7 @@ from pathlib import Path
 import feature_snapshot as feature_snapshot_module
 import model_reflection_snapshot as model_reflection_snapshot_module
 import run_set_and_forget as engine
+import runtime_status_artifact
 import runtime_env
 import shadow_portfolio_settlement as shadow_portfolio_settlement_module
 
@@ -28,6 +29,7 @@ TOURNAMENT_LOG_FILE = BASE_DIR / "openclaw_tournament_log.jsonl"
 TOURNAMENT_SHADOW_PORTFOLIO_LOG_FILE = BASE_DIR / "openclaw_shadow_portfolio_log.jsonl"
 TOURNAMENT_SHADOW_SETTLEMENT_LOG_FILE = BASE_DIR / "openclaw_shadow_portfolio_settlements.jsonl"
 MODEL_REFLECTION_LOG_FILE = BASE_DIR / "openclaw_model_reflection_snapshots.jsonl"
+RUNTIME_STATUS_FILE = BASE_DIR / "openclaw_runtime_status.json"
 ALLOWED_DECISIONS = {"BUY", "SELL", "WAIT", "NO-GO"}
 DEFAULT_OPENCLAW_COMMAND = "openclaw"
 DEFAULT_OPENCLAW_TIMEOUT_SECONDS = 180
@@ -608,6 +610,7 @@ def run_tournament(
     shadow_portfolio_log: Path = TOURNAMENT_SHADOW_PORTFOLIO_LOG_FILE,
     settlement_log: Path = TOURNAMENT_SHADOW_SETTLEMENT_LOG_FILE,
     reflection_log: Path = MODEL_REFLECTION_LOG_FILE,
+    runtime_status_file: Path = RUNTIME_STATUS_FILE,
     settlement_candles_file: Path | None = None,
     run_label: str | None = None,
     model_decision_runner=None,
@@ -648,6 +651,14 @@ def run_tournament(
 
     run_dir = runs_dir / run_id
     run_dir.mkdir(parents=True, exist_ok=True)
+    runtime_status_artifact.update_status(
+        runtime_status_file,
+        tournament=runtime_status_artifact.build_tournament_started_status(
+            run_id,
+            feature_snapshot,
+            len(models_manifest["models"]),
+        ),
+    )
 
     feature_snapshot_path = run_dir / "feature_snapshot.json"
     primary_payload_path = run_dir / "primary_decision.json"
@@ -670,6 +681,19 @@ def run_tournament(
         entry = build_tournament_entry(run_id, feature_snapshot, model, primary_payload, evaluated_output)
         entry_errors = validate_tournament_entry(entry, output_schema)
         if entry_errors:
+            partial_result = {
+                "status": "invalid_tournament_entry",
+                "run": {
+                    "run_id": run_id,
+                    "model_count": len(entries),
+                },
+                "primary_payload": primary_payload,
+                "entries": entries,
+            }
+            runtime_status_artifact.update_status(
+                runtime_status_file,
+                tournament=runtime_status_artifact.build_tournament_finished_status(partial_result, 1),
+            )
             return {
                 "status": "invalid_tournament_entry",
                 "errors": entry_errors,
@@ -702,7 +726,7 @@ def run_tournament(
         settlement_candles_file=settlement_candles_file,
     )
 
-    return {
+    result = {
         "status": "completed",
         "run": {
             "run_id": run_id,
@@ -722,7 +746,12 @@ def run_tournament(
         "entries": entries,
         "shadow_portfolio_tickets": shadow_portfolio_tickets,
         "post_run": post_run,
-    }, 0
+    }
+    runtime_status_artifact.update_status(
+        runtime_status_file,
+        tournament=runtime_status_artifact.build_tournament_finished_status(result, 0),
+    )
+    return result, 0
 
 
 def render_text_report(result: dict):
@@ -763,6 +792,7 @@ def main():
     parser.add_argument("--shadow-portfolio-log", type=Path, default=TOURNAMENT_SHADOW_PORTFOLIO_LOG_FILE)
     parser.add_argument("--shadow-settlement-log", type=Path, default=TOURNAMENT_SHADOW_SETTLEMENT_LOG_FILE)
     parser.add_argument("--reflection-log", type=Path, default=MODEL_REFLECTION_LOG_FILE)
+    parser.add_argument("--runtime-status-file", type=Path, default=RUNTIME_STATUS_FILE)
     parser.add_argument("--settlement-candles-file", type=Path, default=None)
     parser.add_argument("--run-label", default=None)
     parser.add_argument("--format", choices=["json", "text"], default="json")
@@ -780,6 +810,7 @@ def main():
         shadow_portfolio_log=args.shadow_portfolio_log,
         settlement_log=args.shadow_settlement_log,
         reflection_log=args.reflection_log,
+        runtime_status_file=args.runtime_status_file,
         settlement_candles_file=args.settlement_candles_file,
         run_label=args.run_label,
     )

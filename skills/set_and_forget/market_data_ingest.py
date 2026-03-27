@@ -105,6 +105,7 @@ def run_market_data_ingest(
     paper_trades_log: Path,
     decision_log: Path,
     trigger: str = "market_data_ingest",
+    tournament_sidecar_config_file: Path | None = None,
 ):
     ingest_errors = validate_ingest_payload(ingest_payload, ingest_schema)
     if ingest_errors:
@@ -138,6 +139,7 @@ def run_market_data_ingest(
         decision_log=decision_log,
         trigger=trigger,
         run_label=market_input["meta"].get("source_kind"),
+        tournament_sidecar_config_file=tournament_sidecar_config_file,
     )
     return {
         "status": "processed" if exit_code == 0 else "error",

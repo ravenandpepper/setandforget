@@ -9,6 +9,7 @@ import run_structured_automation as automation
 
 BASE_DIR = Path(__file__).resolve().parent
 WEBHOOK_SCHEMA_FILE = BASE_DIR / "tradingview_webhook_schema.json"
+TOURNAMENT_SIDECAR_CONFIG_FILE = BASE_DIR / "live_tournament_sidecar.json"
 
 SNAPSHOT_FIELDS = [
     "pair",
@@ -216,6 +217,7 @@ def run_tradingview_ingest(
     runs_dir: Path,
     paper_trades_log: Path,
     decision_log: Path,
+    tournament_sidecar_config_file: Path | None = None,
 ):
     canonical_alert, webhook_errors = validate_tradingview_alert(alert_payload, webhook_schema)
     if webhook_errors:
@@ -260,6 +262,7 @@ def run_tradingview_ingest(
             paper_trades_log=paper_trades_log,
             decision_log=decision_log,
             trigger="tradingview_trigger_only",
+            tournament_sidecar_config_file=tournament_sidecar_config_file,
         )
         return {
             "status": "processed" if exit_code == 0 else ingest_result["status"],
@@ -290,6 +293,7 @@ def run_tradingview_ingest(
             paper_trades_log=paper_trades_log,
             decision_log=decision_log,
             trigger="tradingview_webhook",
+            tournament_sidecar_config_file=tournament_sidecar_config_file,
         )
         return {
             "status": "processed" if exit_code == 0 else ingest_result["status"],

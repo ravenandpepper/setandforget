@@ -145,7 +145,16 @@ def assert_missing_trigger_time_defaults_to_current_utc_minute():
     fixed_trigger_time = datetime(2026, 3, 27, 8, 0, tzinfo=timezone.utc)
     observed = {}
 
-    def fake_run_schedule_plan(plan, webhook_schema, skill, decision_schema, runs_dir, paper_trades_log, decision_log):
+    def fake_run_schedule_plan(
+        plan,
+        webhook_schema,
+        skill,
+        decision_schema,
+        runs_dir,
+        paper_trades_log,
+        decision_log,
+        tournament_sidecar_config_file=None,
+    ):
         observed["plan"] = plan
         return {
             "provider": plan["provider"],
@@ -157,6 +166,7 @@ def assert_missing_trigger_time_defaults_to_current_utc_minute():
             "total_runs": 0,
             "ok_runs": 0,
             "error_runs": 0,
+            "skipped_runs": 0,
             "exit_code": 0,
         }, 0
 

@@ -36,6 +36,7 @@ def build_server_config(
     paper_trades_log: Path,
     runs_dir: Path,
     decision_log: Path,
+    tournament_sidecar_config_file: Path,
     assets: dict,
 ):
     return {
@@ -45,6 +46,7 @@ def build_server_config(
         "paper_trades_log": paper_trades_log,
         "runs_dir": runs_dir,
         "decision_log": decision_log,
+        "tournament_sidecar_config_file": tournament_sidecar_config_file,
         "assets": assets,
     }
 
@@ -94,6 +96,7 @@ def process_webhook_request(raw_body: bytes, config: dict, payload_kind_override
         runs_dir=config["runs_dir"],
         paper_trades_log=config["paper_trades_log"],
         decision_log=config["decision_log"],
+        tournament_sidecar_config_file=config["tournament_sidecar_config_file"],
     )
     if exit_code == 0:
         return result, HTTPStatus.OK
@@ -193,6 +196,7 @@ def serve(
     paper_trades_log: Path,
     runs_dir: Path,
     decision_log: Path,
+    tournament_sidecar_config_file: Path,
 ):
     assets = load_runtime_assets(
         webhook_schema_file=webhook_schema_file,
@@ -206,6 +210,7 @@ def serve(
         paper_trades_log=paper_trades_log,
         runs_dir=runs_dir,
         decision_log=decision_log,
+        tournament_sidecar_config_file=tournament_sidecar_config_file,
         assets=assets,
     )
     server = ThreadingHTTPServer((host, port), build_handler(config))
@@ -225,6 +230,7 @@ def main():
     parser.add_argument("--paper-trades-log", type=Path, default=engine.PAPER_TRADES_LOG_FILE)
     parser.add_argument("--runs-dir", type=Path, default=automation.AUTOMATION_RUNS_DIR)
     parser.add_argument("--decision-log", type=Path, default=automation.AUTOMATION_DECISIONS_LOG_FILE)
+    parser.add_argument("--tournament-sidecar-config-file", type=Path, default=tradingview_webhook.TOURNAMENT_SIDECAR_CONFIG_FILE)
     args = parser.parse_args()
 
     server, _config = serve(
@@ -239,6 +245,7 @@ def main():
         paper_trades_log=args.paper_trades_log,
         runs_dir=args.runs_dir,
         decision_log=args.decision_log,
+        tournament_sidecar_config_file=args.tournament_sidecar_config_file,
     )
     try:
         print(

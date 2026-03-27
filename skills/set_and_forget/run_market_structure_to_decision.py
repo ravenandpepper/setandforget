@@ -4,6 +4,7 @@ import sys
 from pathlib import Path
 
 import feature_snapshot
+import live_tournament_sidecar
 import market_structure
 import run_set_and_forget as engine
 import run_structured_automation as automation
@@ -31,6 +32,7 @@ def build_stage_error_result(stage: str, errors: list[str], market_input: dict):
         "feature_snapshot": None,
         "projected_snapshot": None,
         "automation": None,
+        "tournament": None,
     }
 
 
@@ -45,6 +47,7 @@ def run_market_structure_to_decision(
     decision_log: Path,
     trigger: str = "market_structure",
     run_label: str | None = None,
+    tournament_sidecar_config_file: Path | None = None,
 ):
     input_errors = market_structure.validate_market_structure_input(market_input, input_schema)
     if input_errors:
@@ -70,6 +73,14 @@ def run_market_structure_to_decision(
         trigger=trigger,
         run_label=run_label or market_input.get("meta", {}).get("source_kind"),
     )
+    tournament_result = None
+    if exit_code == 0 and tournament_sidecar_config_file is not None:
+        tournament_result, _tournament_exit_code = live_tournament_sidecar.run_live_tournament_sidecar(
+            feature_snapshot=feature_payload,
+            skill=skill,
+            decision_schema=decision_schema,
+            config_file=tournament_sidecar_config_file,
+        )
     return {
         "status": "ok",
         "stage": "decision_complete",
@@ -77,6 +88,7 @@ def run_market_structure_to_decision(
         "feature_snapshot": feature_payload,
         "projected_snapshot": projected_snapshot,
         "automation": automation_result,
+        "tournament": tournament_result,
     }, exit_code
 
 
@@ -127,6 +139,7 @@ def main():
     parser.add_argument("--decision-log", type=Path, default=automation.AUTOMATION_DECISIONS_LOG_FILE)
     parser.add_argument("--trigger", default="market_structure")
     parser.add_argument("--run-label", default=None)
+    parser.add_argument("--tournament-sidecar-config-file", type=Path, default=None)
     args = parser.parse_args()
 
     market_input = load_json(args.market_input_file)
@@ -146,6 +159,7 @@ def main():
         decision_log=args.decision_log,
         trigger=args.trigger,
         run_label=args.run_label,
+        tournament_sidecar_config_file=args.tournament_sidecar_config_file,
     )
     emit_output(result, args.format)
     return exit_code

@@ -18,10 +18,16 @@ def load_json(path: Path):
         return json.load(handle)
 
 
+def write_json(path: Path, payload: dict):
+    with open(path, "w", encoding="utf-8") as handle:
+        json.dump(payload, handle, indent=2)
+
+
 def run_case(case: dict, skill: dict, input_schema: dict, feature_schema: dict, decision_schema: dict):
     expected = case["expected"]
     with tempfile.TemporaryDirectory() as tmpdir:
         tmp_path = Path(tmpdir)
+        write_json(tmp_path / "live_tournament_sidecar.json", {"enabled": False})
         result, exit_code = runner.run_market_structure_to_decision(
             market_input=case["market_input"],
             skill=skill,
@@ -33,12 +39,14 @@ def run_case(case: dict, skill: dict, input_schema: dict, feature_schema: dict, 
             decision_log=tmp_path / "automation_decisions_log.jsonl",
             trigger="test",
             run_label=case["id"],
+            tournament_sidecar_config_file=tmp_path / "live_tournament_sidecar.json",
         )
 
         assert exit_code == 0, f"{case['id']}: expected successful run"
         assert result["status"] == "ok", f"{case['id']}: result status should be ok"
         assert result["feature_snapshot"] is not None, f"{case['id']}: missing feature snapshot"
         assert result["projected_snapshot"] is not None, f"{case['id']}: missing projected snapshot"
+        assert result["tournament"]["status"] == "disabled", f"{case['id']}: tournament sidecar should stay disabled"
         assert result["automation"]["payload"]["decision"] == expected["decision"], (
             f"{case['id']}: expected decision {expected['decision']}, got {result['automation']['payload']['decision']}"
         )
@@ -64,6 +72,7 @@ def run_invalid_case(skill: dict, input_schema: dict, feature_schema: dict, deci
 
     with tempfile.TemporaryDirectory() as tmpdir:
         tmp_path = Path(tmpdir)
+        write_json(tmp_path / "live_tournament_sidecar.json", {"enabled": False})
         result, exit_code = runner.run_market_structure_to_decision(
             market_input=invalid_input,
             skill=skill,
@@ -75,6 +84,7 @@ def run_invalid_case(skill: dict, input_schema: dict, feature_schema: dict, deci
             decision_log=tmp_path / "automation_decisions_log.jsonl",
             trigger="test",
             run_label="invalid_case",
+            tournament_sidecar_config_file=tmp_path / "live_tournament_sidecar.json",
         )
 
     assert exit_code == 1, "invalid case should fail with exit code 1"
