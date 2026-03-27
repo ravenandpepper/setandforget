@@ -1,13 +1,19 @@
 (function () {
-  const palette = ["#80ffdb", "#5390d9", "#fba2b0", "#64dfe0", "#7400b8"];
+  const palette = ["#00ffaa", "#4d9fff", "#ff4d6a", "#b44dff", "#ff9f43", "#00e5ff"];
+
   const fallbackViewModel = {
-    view_model_version: "1.0",
+    view_model_version: "2.0",
     generated_at: "2026-03-26T17:00:00+00:00",
     overview: {
       model_count: 4,
       tournament_entry_count: 28,
       settlement_count: 12,
       reflection_snapshot_count: 16,
+      open_trades: 3,
+      total_gross_pnl_eur: -312.5,
+      total_net_pnl_eur: -347.8,
+      total_costs_eur: 35.3,
+      best_winrate: 42.0,
     },
     leaderboard: [
       {
@@ -15,20 +21,35 @@
         display_name: "claude-sonnet-4.6",
         leaderboard_rank: 1,
         cumulative_realized_pnl_r: -3.0,
+        net_pnl_r: -3.4,
+        gross_pnl_eur: -150.0,
+        net_pnl_eur: -168.5,
+        total_costs_eur: 18.5,
         win_rate_percent: 0,
         invalid_output_count: 2,
         baseline_agreement_rate_percent: 100,
         average_confidence_score: 67,
         latest_decision: "BUY",
         latest_outcome_status: "stop_loss_hit",
-        peer_rank_by_pnl: 1,
-        peer_gap_to_best_r: 0,
+        total_trades: 7,
+        buy_count: 5,
+        sell_count: 2,
+        wait_count: 3,
+        nogo_count: 0,
+        open_trades: 1,
+        max_drawdown_r: -3.0,
+        cost_per_trade_eur: 2.64,
+        costs_as_pct_of_gross: 12.3,
+        spread_cost_eur: 10.5,
+        commission_cost_eur: 3.5,
+        swap_cost_eur: 2.8,
+        slippage_cost_eur: 1.7,
         self_review: "Losses remain controlled, but selectivity has to improve before confidence should expand again.",
         equity_curve: [
-          { recorded_at: "2026-03-26T15:00:00+00:00", equity_r: 0, outcome_status: "unsettled" },
-          { recorded_at: "2026-03-26T15:30:00+00:00", equity_r: -1, outcome_status: "stop_loss_hit" },
-          { recorded_at: "2026-03-26T16:00:00+00:00", equity_r: -2, outcome_status: "stop_loss_hit" },
-          { recorded_at: "2026-03-26T16:30:00+00:00", equity_r: -3, outcome_status: "stop_loss_hit" },
+          { recorded_at: "2026-03-26T15:00:00+00:00", equity_r: 0 },
+          { recorded_at: "2026-03-26T15:30:00+00:00", equity_r: -1 },
+          { recorded_at: "2026-03-26T16:00:00+00:00", equity_r: -2 },
+          { recorded_at: "2026-03-26T16:30:00+00:00", equity_r: -3 },
         ],
       },
       {
@@ -36,20 +57,35 @@
         display_name: "claude-opus-4.6",
         leaderboard_rank: 2,
         cumulative_realized_pnl_r: -3.0,
+        net_pnl_r: -3.6,
+        gross_pnl_eur: -150.0,
+        net_pnl_eur: -172.0,
+        total_costs_eur: 22.0,
         win_rate_percent: 0,
         invalid_output_count: 2,
         baseline_agreement_rate_percent: 100,
         average_confidence_score: 70,
         latest_decision: "BUY",
         latest_outcome_status: "stop_loss_hit",
-        peer_rank_by_pnl: 2,
-        peer_gap_to_best_r: 0,
+        total_trades: 7,
+        buy_count: 6,
+        sell_count: 1,
+        wait_count: 2,
+        nogo_count: 0,
+        open_trades: 1,
+        max_drawdown_r: -3.0,
+        cost_per_trade_eur: 3.14,
+        costs_as_pct_of_gross: 14.7,
+        spread_cost_eur: 12.0,
+        commission_cost_eur: 4.2,
+        swap_cost_eur: 3.5,
+        slippage_cost_eur: 2.3,
         self_review: "The contract is stable, but the trade filter is still too permissive after repeat stop-outs.",
         equity_curve: [
-          { recorded_at: "2026-03-26T15:00:00+00:00", equity_r: 0, outcome_status: "unsettled" },
-          { recorded_at: "2026-03-26T15:30:00+00:00", equity_r: -1, outcome_status: "stop_loss_hit" },
-          { recorded_at: "2026-03-26T16:00:00+00:00", equity_r: -2, outcome_status: "stop_loss_hit" },
-          { recorded_at: "2026-03-26T16:30:00+00:00", equity_r: -3, outcome_status: "stop_loss_hit" },
+          { recorded_at: "2026-03-26T15:00:00+00:00", equity_r: 0 },
+          { recorded_at: "2026-03-26T15:30:00+00:00", equity_r: -1 },
+          { recorded_at: "2026-03-26T16:00:00+00:00", equity_r: -2 },
+          { recorded_at: "2026-03-26T16:30:00+00:00", equity_r: -3 },
         ],
       },
       {
@@ -57,20 +93,35 @@
         display_name: "minimax-m1",
         leaderboard_rank: 3,
         cumulative_realized_pnl_r: -3.0,
+        net_pnl_r: -3.3,
+        gross_pnl_eur: -150.0,
+        net_pnl_eur: -165.8,
+        total_costs_eur: 15.8,
         win_rate_percent: 0,
         invalid_output_count: 2,
         baseline_agreement_rate_percent: 100,
         average_confidence_score: 63,
         latest_decision: "BUY",
         latest_outcome_status: "stop_loss_hit",
-        peer_rank_by_pnl: 3,
-        peer_gap_to_best_r: 0,
+        total_trades: 7,
+        buy_count: 4,
+        sell_count: 3,
+        wait_count: 4,
+        nogo_count: 1,
+        open_trades: 0,
+        max_drawdown_r: -3.0,
+        cost_per_trade_eur: 2.26,
+        costs_as_pct_of_gross: 10.5,
+        spread_cost_eur: 8.8,
+        commission_cost_eur: 2.8,
+        swap_cost_eur: 2.4,
+        slippage_cost_eur: 1.8,
         self_review: "Outputs are contract-clean, but edge quality still lags the baseline and better-ranked peers.",
         equity_curve: [
-          { recorded_at: "2026-03-26T15:00:00+00:00", equity_r: 0, outcome_status: "unsettled" },
-          { recorded_at: "2026-03-26T15:30:00+00:00", equity_r: -1, outcome_status: "stop_loss_hit" },
-          { recorded_at: "2026-03-26T16:00:00+00:00", equity_r: -2, outcome_status: "stop_loss_hit" },
-          { recorded_at: "2026-03-26T16:30:00+00:00", equity_r: -3, outcome_status: "stop_loss_hit" },
+          { recorded_at: "2026-03-26T15:00:00+00:00", equity_r: 0 },
+          { recorded_at: "2026-03-26T15:30:00+00:00", equity_r: -1 },
+          { recorded_at: "2026-03-26T16:00:00+00:00", equity_r: -2 },
+          { recorded_at: "2026-03-26T16:30:00+00:00", equity_r: -3 },
         ],
       },
       {
@@ -78,27 +129,50 @@
         display_name: "kimi-k2",
         leaderboard_rank: 4,
         cumulative_realized_pnl_r: -1.0,
+        net_pnl_r: -1.2,
+        gross_pnl_eur: -50.0,
+        net_pnl_eur: -59.5,
+        total_costs_eur: 9.5,
         win_rate_percent: 0,
         invalid_output_count: 5,
         baseline_agreement_rate_percent: 85.71,
         average_confidence_score: 41,
         latest_decision: "BUY",
         latest_outcome_status: "stop_loss_hit",
-        peer_rank_by_pnl: 4,
-        peer_gap_to_best_r: 2,
+        total_trades: 3,
+        buy_count: 2,
+        sell_count: 0,
+        wait_count: 8,
+        nogo_count: 2,
+        open_trades: 1,
+        max_drawdown_r: -1.0,
+        cost_per_trade_eur: 3.17,
+        costs_as_pct_of_gross: 19.0,
+        spread_cost_eur: 5.2,
+        commission_cost_eur: 1.8,
+        swap_cost_eur: 1.5,
+        slippage_cost_eur: 1.0,
         self_review: "Contract reliability improved, but invalid outputs still keep this model behind the field.",
         equity_curve: [
-          { recorded_at: "2026-03-26T15:00:00+00:00", equity_r: 0, outcome_status: "unsettled" },
-          { recorded_at: "2026-03-26T15:30:00+00:00", equity_r: 0, outcome_status: "unsettled" },
-          { recorded_at: "2026-03-26T16:00:00+00:00", equity_r: 0, outcome_status: "unsettled" },
-          { recorded_at: "2026-03-26T16:30:00+00:00", equity_r: -1, outcome_status: "stop_loss_hit" },
+          { recorded_at: "2026-03-26T15:00:00+00:00", equity_r: 0 },
+          { recorded_at: "2026-03-26T15:30:00+00:00", equity_r: 0 },
+          { recorded_at: "2026-03-26T16:00:00+00:00", equity_r: 0 },
+          { recorded_at: "2026-03-26T16:30:00+00:00", equity_r: -1 },
         ],
       },
     ],
-    charts: { equity_curves: [], performance_bars: [] },
+    pair_performance: [
+      { pair: "EUR/USD", trades: 8, wins: 2, losses: 4, pending: 2, net_pnl_r: -1.8, best_model: "claude-sonnet-4.6" },
+      { pair: "GBP/USD", trades: 6, wins: 1, losses: 3, pending: 2, net_pnl_r: -2.2, best_model: "kimi-k2" },
+      { pair: "USD/JPY", trades: 5, wins: 0, losses: 4, pending: 1, net_pnl_r: -3.1, best_model: "minimax-m1" },
+      { pair: "AUD/USD", trades: 3, wins: 1, losses: 1, pending: 1, net_pnl_r: -0.4, best_model: "claude-opus-4.6" },
+      { pair: "EUR/GBP", trades: 4, wins: 2, losses: 1, pending: 1, net_pnl_r: 0.6, best_model: "claude-sonnet-4.6" },
+      { pair: "NZD/USD", trades: 2, wins: 0, losses: 2, pending: 0, net_pnl_r: -1.8, best_model: "minimax-m1" },
+    ],
     recent_decisions: [
       {
         model_id: "openrouter/moonshotai/kimi-k2",
+        display_name: "kimi-k2",
         decision: "BUY",
         confidence_score: 58,
         summary: "Kimi returned a valid contract output after retry hardening, but still took the same losing continuation setup.",
@@ -108,6 +182,7 @@
       },
       {
         model_id: "openrouter/anthropic/claude-sonnet-4.6",
+        display_name: "claude-sonnet-4.6",
         decision: "BUY",
         confidence_score: 62,
         summary: "Sonnet stayed aligned with the baseline and delivered a contract-valid paper verdict.",
@@ -117,6 +192,7 @@
       },
       {
         model_id: "openrouter/anthropic/claude-opus-4.6",
+        display_name: "claude-opus-4.6",
         decision: "BUY",
         confidence_score: 66,
         summary: "Opus preserved the objective setup reading, but the market outcome still stopped the trade.",
@@ -126,60 +202,18 @@
       },
       {
         model_id: "openrouter/minimax/minimax-m1",
-        decision: "BUY",
-        confidence_score: 59,
-        summary: "Minimax accepted the reward-to-risk profile and remained contract-clean.",
+        display_name: "minimax-m1",
+        decision: "WAIT",
+        confidence_score: 34,
+        summary: "Minimax opted to sit this one out - low confidence on the continuation after three consecutive stop-outs.",
         primary_decision: "BUY",
         recorded_at: "2026-03-26T16:57:00+00:00",
-        reason_codes: ["HIGHER_TF_ALIGNED", "RR_VALID"],
+        reason_codes: ["LOW_CONFIDENCE", "REPEAT_LOSS_STREAK"],
       },
     ],
   };
 
-  function formatModelName(modelId, displayName) {
-    if (displayName) {
-      return displayName;
-    }
-    const tail = String(modelId || "").split("/").pop();
-    return tail || "unknown-model";
-  }
-
-  function formatDateTime(value) {
-    if (!value) {
-      return "No timestamp";
-    }
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) {
-      return value;
-    }
-    return date.toLocaleString(undefined, {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  }
-
-  function formatPercent(value) {
-    if (value === null || value === undefined) {
-      return "n/a";
-    }
-    return `${Number(value).toFixed(1)}%`;
-  }
-
-  function formatR(value) {
-    if (value === null || value === undefined) {
-      return "n/a";
-    }
-    const number = Number(value);
-    if (Number.isNaN(number)) {
-      return "n/a";
-    }
-    return `${number > 0 ? "+" : ""}${number.toFixed(1)}R`;
-  }
-
-  function escapeHtml(value) {
+  function esc(value) {
     return String(value)
       .replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")
@@ -188,187 +222,317 @@
       .replace(/'/g, "&#39;");
   }
 
-  function getColor(index) {
+  function num(value) {
+    if (value === null || value === undefined || value === "") {
+      return null;
+    }
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+
+  function modelName(modelId, displayName) {
+    return displayName || String(modelId || "").split("/").pop() || "unknown";
+  }
+
+  function color(index) {
     return palette[index % palette.length];
   }
 
-  function decisionClassName(decision) {
-    if (decision === "BUY") {
-      return "background: rgba(128, 255, 219, 0.18); color: #80ffdb; border: 1px solid rgba(128, 255, 219, 0.28);";
+  function pickNumber() {
+    for (let index = 0; index < arguments.length; index += 1) {
+      const parsed = num(arguments[index]);
+      if (parsed !== null) {
+        return parsed;
+      }
     }
-    if (decision === "SELL") {
-      return "background: rgba(251, 162, 176, 0.18); color: #fba2b0; border: 1px solid rgba(251, 162, 176, 0.28);";
-    }
-    return "background: rgba(83, 144, 217, 0.18); color: #64dfe0; border: 1px solid rgba(100, 223, 224, 0.28);";
+    return null;
   }
 
-  function statusStyle(status) {
-    if (status === "take_profit_hit") {
-      return "background: rgba(128, 255, 219, 0.18); color: #80ffdb; border: 1px solid rgba(128, 255, 219, 0.28);";
-    }
-    if (status === "stop_loss_hit") {
-      return "background: rgba(251, 162, 176, 0.18); color: #fba2b0; border: 1px solid rgba(251, 162, 176, 0.28);";
-    }
-    if (status === "unsettled" || status === "pending") {
-      return "background: rgba(83, 144, 217, 0.18); color: #64dfe0; border: 1px solid rgba(100, 223, 224, 0.28);";
-    }
-    return "background: rgba(255, 255, 255, 0.08); color: #f6fbff; border: 1px solid rgba(255, 255, 255, 0.12);";
+  function sumKnown(values) {
+    let total = 0;
+    let found = false;
+    values.forEach((value) => {
+      const parsed = num(value);
+      if (parsed !== null) {
+        total += parsed;
+        found = true;
+      }
+    });
+    return found ? total : null;
   }
 
-  function setOverview(data, sourceLabel) {
-    const sourceEl = document.getElementById("data-source");
-    const generatedAtEl = document.getElementById("generated-at");
-    const overviewCardsEl = document.getElementById("overview-cards");
+  function fmtCount(value) {
+    const parsed = num(value);
+    return parsed === null ? "n/a" : String(Math.round(parsed));
+  }
+
+  function fmtR(value) {
+    const parsed = num(value);
+    if (parsed === null) {
+      return "n/a";
+    }
+    return `${parsed > 0 ? "+" : ""}${parsed.toFixed(1)}R`;
+  }
+
+  function fmtPct(value) {
+    const parsed = num(value);
+    return parsed === null ? "n/a" : `${parsed.toFixed(1)}%`;
+  }
+
+  function fmtMoney(value) {
+    const parsed = num(value);
+    if (parsed === null) {
+      return "n/a";
+    }
+    return `EUR ${parsed > 0 ? "+" : ""}${parsed.toFixed(2)}`;
+  }
+
+  function fmtDate(value) {
+    if (!value) {
+      return "";
+    }
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) {
+      return String(value);
+    }
+    return parsed.toLocaleString(undefined, {
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
+
+  function pnlClass(value) {
+    const parsed = num(value);
+    if (parsed === null) {
+      return "";
+    }
+    if (parsed > 0) {
+      return "positive";
+    }
+    if (parsed < 0) {
+      return "negative";
+    }
+    return "";
+  }
+
+  function grossPnlR(model) {
+    return pickNumber(model.cumulative_realized_pnl_r);
+  }
+
+  function netPnlR(model) {
+    return pickNumber(model.net_pnl_r, model.cumulative_realized_pnl_r);
+  }
+
+  function grossPnlEur(model) {
+    return pickNumber(model.gross_pnl_eur, model.cumulative_realized_pnl_eur);
+  }
+
+  function netPnlEur(model) {
+    return pickNumber(model.net_pnl_eur);
+  }
+
+  function totalTrades(model) {
+    return pickNumber(model.total_trades, model.actionable_total);
+  }
+
+  function evaluations(model) {
+    return pickNumber(model.evaluations_total, model.total_trades);
+  }
+
+  function openTrades(model) {
+    const explicit = pickNumber(model.open_trades);
+    if (explicit !== null) {
+      return explicit;
+    }
+    const actionables = pickNumber(model.total_trades, model.actionable_total);
+    const closed = pickNumber(model.closed_total);
+    if (actionables !== null && closed !== null) {
+      return Math.max(actionables - closed, 0);
+    }
+    return null;
+  }
+
+  function maxDrawdownR(model) {
+    const explicit = pickNumber(model.max_drawdown_r);
+    if (explicit !== null) {
+      return explicit;
+    }
+    const curve = Array.isArray(model.equity_curve) ? model.equity_curve : [];
+    const values = curve
+      .map((point) => num(point.equity_r))
+      .filter((value) => value !== null);
+    if (!values.length) {
+      return null;
+    }
+    return Math.min.apply(null, values);
+  }
+
+  function totalCosts(model) {
+    return pickNumber(model.total_costs_eur);
+  }
+
+  function costPerTrade(model) {
+    const explicit = pickNumber(model.cost_per_trade_eur);
+    if (explicit !== null) {
+      return explicit;
+    }
+    const costs = totalCosts(model);
+    const trades = totalTrades(model);
+    if (costs !== null && trades !== null && trades > 0) {
+      return costs / trades;
+    }
+    return null;
+  }
+
+  function costsAsPctOfGross(model) {
+    const explicit = pickNumber(model.costs_as_pct_of_gross);
+    if (explicit !== null) {
+      return explicit;
+    }
+    const costs = totalCosts(model);
+    const gross = grossPnlEur(model);
+    if (costs !== null && gross !== null && gross !== 0) {
+      return (costs / Math.abs(gross)) * 100;
+    }
+    return null;
+  }
+
+  function costComponents(model) {
+    return [
+      { label: "Spread", value: pickNumber(model.spread_cost_eur) },
+      { label: "Commission", value: pickNumber(model.commission_cost_eur) },
+      { label: "Swap", value: pickNumber(model.swap_cost_eur) },
+      { label: "Slippage", value: pickNumber(model.slippage_cost_eur) },
+    ].filter((item) => item.value !== null);
+  }
+
+  function buildOverview(data) {
     const overview = data.overview || {};
-    const cards = [
-      {
-        label: "Models",
-        value: overview.model_count || 0,
-        copy: "Active leaderboard participants",
-      },
-      {
-        label: "Entries",
-        value: overview.tournament_entry_count || 0,
-        copy: "Logged tournament decisions",
-      },
-      {
-        label: "Settlements",
-        value: overview.settlement_count || 0,
-        copy: "Closed or classified shadow outcomes",
-      },
-      {
-        label: "Reflections",
-        value: overview.reflection_snapshot_count || 0,
-        copy: "Prompt-ready self-review snapshots",
-      },
+    const items = data.leaderboard || [];
+    return {
+      modelCount: pickNumber(overview.model_count, items.length) || 0,
+      entryCount: pickNumber(
+        overview.tournament_entry_count,
+        sumKnown(items.map((item) => evaluations(item)))
+      ) || 0,
+      settlementCount: pickNumber(
+        overview.settlement_count,
+        sumKnown(items.map((item) => item.closed_total))
+      ) || 0,
+      reflectionCount: pickNumber(overview.reflection_snapshot_count) || 0,
+      openTrades: pickNumber(
+        overview.open_trades,
+        sumKnown(items.map((item) => openTrades(item)))
+      ),
+      totalGrossPnlEur: pickNumber(
+        overview.total_gross_pnl_eur,
+        sumKnown(items.map((item) => grossPnlEur(item)))
+      ),
+      totalNetPnlEur: pickNumber(
+        overview.total_net_pnl_eur,
+        sumKnown(items.map((item) => netPnlEur(item)))
+      ),
+      totalCostsEur: pickNumber(
+        overview.total_costs_eur,
+        sumKnown(items.map((item) => totalCosts(item)))
+      ),
+      bestWinrate: pickNumber(
+        overview.best_winrate,
+        items.reduce((best, item) => {
+          const winRate = num(item.win_rate_percent);
+          if (winRate === null) {
+            return best;
+          }
+          return best === null ? winRate : Math.max(best, winRate);
+        }, null)
+      ),
+    };
+  }
+
+  function renderTicker(data) {
+    const element = document.getElementById("ticker-bar");
+    const overview = buildOverview(data);
+    const items = [
+      { label: "Models", value: fmtCount(overview.modelCount) },
+      { label: "Entries", value: fmtCount(overview.entryCount) },
+      { label: "Settled", value: fmtCount(overview.settlementCount) },
+      { label: "Open", value: fmtCount(overview.openTrades) },
+      { label: "Gross PnL", value: fmtMoney(overview.totalGrossPnlEur), cls: pnlClass(overview.totalGrossPnlEur) },
+      { label: "Net PnL", value: fmtMoney(overview.totalNetPnlEur), cls: pnlClass(overview.totalNetPnlEur) },
+      { label: "Total Costs", value: fmtMoney(overview.totalCostsEur), cls: pnlClass(-Math.abs(pickNumber(overview.totalCostsEur, 0))) },
+      { label: "Best WR", value: fmtPct(overview.bestWinrate) },
+      { label: "Reflections", value: fmtCount(overview.reflectionCount) },
     ];
 
-    sourceEl.textContent = sourceLabel;
-    generatedAtEl.textContent = `Last build: ${formatDateTime(data.generated_at)}`;
-    overviewCardsEl.innerHTML = cards
+    element.innerHTML = items
       .map(
-        (card) => `
-          <article class="metric-card">
-            <div class="metric-value">${escapeHtml(card.value)}</div>
-            <div class="metric-label">${escapeHtml(card.label)}</div>
-            <div class="metric-copy">${escapeHtml(card.copy)}</div>
-          </article>
-        `
+        (item) =>
+          `<div class="ticker-item"><span class="ticker-label">${esc(item.label)}</span><span class="ticker-value ${item.cls || ""}">${esc(item.value)}</span></div>`
       )
       .join("");
   }
 
+  function renderStatus(data, label) {
+    document.getElementById("data-source").textContent = label;
+    document.getElementById("generated-at").textContent = data.generated_at
+      ? `Updated ${fmtDate(data.generated_at)}`
+      : "";
+  }
+
   function renderLeaderboard(data) {
-    const el = document.getElementById("leaderboard-grid");
+    const element = document.getElementById("leaderboard");
     const items = data.leaderboard || [];
     if (!items.length) {
-      el.innerHTML = '<div class="empty-state">No leaderboard rows were found in the current dashboard view model.</div>';
+      element.innerHTML = '<div class="empty-state">No leaderboard data yet.</div>';
       return;
     }
 
-    el.innerHTML = items
+    element.innerHTML = items
       .map((item, index) => {
-        const color = getColor(index);
-        const rankStyle = `background: ${color}22; color: ${color}; border: 1px solid ${color}55;`;
+        const rank = item.leaderboard_rank || index + 1;
+        const rankClass = rank === 1 ? "gold" : rank === 2 ? "silver" : rank === 3 ? "bronze" : "default";
+        const statusClass =
+          item.latest_outcome_status === "take_profit_hit"
+            ? "pill-win"
+            : item.latest_outcome_status === "stop_loss_hit"
+              ? "pill-loss"
+              : "pill-pending";
+
         return `
-          <article class="leader-card">
-            <div class="leader-topline">
-              <span class="rank-pill" style="${rankStyle}">#${escapeHtml(item.leaderboard_rank || index + 1)}</span>
-              <span class="status-pill" style="${statusStyle(item.latest_outcome_status)}">${escapeHtml(item.latest_outcome_status || "unsettled")}</span>
+          <div class="lb-row rank-${rank}">
+            <div class="lb-rank ${rankClass}">#${rank}</div>
+            <div class="lb-info">
+              <div class="lb-name">${esc(modelName(item.model_id, item.display_name))}</div>
+              <div class="lb-subtitle">
+                <span class="lb-pill ${statusClass}">${esc(item.latest_outcome_status || "pending")}</span>
+                <span>Conf: ${esc(fmtCount(item.average_confidence_score))}</span>
+                <span>Agreement: ${esc(fmtPct(item.baseline_agreement_rate_percent))}</span>
+                <span>Invalid: ${esc(fmtCount(item.invalid_output_count))}</span>
+              </div>
             </div>
-            <div class="model-name">${escapeHtml(formatModelName(item.model_id, item.display_name))}</div>
-            <div class="leader-grid">
-              <div class="leader-stat">Realized PnL<strong>${escapeHtml(formatR(item.cumulative_realized_pnl_r))}</strong></div>
-              <div class="leader-stat">Win Rate<strong>${escapeHtml(formatPercent(item.win_rate_percent))}</strong></div>
-              <div class="leader-stat">Agreement<strong>${escapeHtml(formatPercent(item.baseline_agreement_rate_percent))}</strong></div>
-              <div class="leader-stat">Invalid Outputs<strong>${escapeHtml(item.invalid_output_count || 0)}</strong></div>
+            <div class="lb-stats">
+              <div class="lb-stat"><div class="lb-stat-value ${pnlClass(grossPnlR(item))}">${esc(fmtR(grossPnlR(item)))}</div><div class="lb-stat-label">Gross R</div></div>
+              <div class="lb-stat"><div class="lb-stat-value ${pnlClass(netPnlR(item))}">${esc(fmtR(netPnlR(item)))}</div><div class="lb-stat-label">Net R</div></div>
+              <div class="lb-stat"><div class="lb-stat-value">${esc(fmtPct(item.win_rate_percent))}</div><div class="lb-stat-label">Win Rate</div></div>
+              <div class="lb-stat"><div class="lb-stat-value ${pnlClass(maxDrawdownR(item))}">${esc(fmtR(maxDrawdownR(item)))}</div><div class="lb-stat-label">Max DD</div></div>
+              <div class="lb-stat"><div class="lb-stat-value">${esc(fmtCount(totalTrades(item)))}</div><div class="lb-stat-label">Trades</div></div>
+              <div class="lb-stat"><div class="lb-stat-value">${esc(fmtCount(openTrades(item)))}</div><div class="lb-stat-label">Open</div></div>
             </div>
-            <div class="leader-review">${escapeHtml(item.self_review || "No reflection snapshot available yet.")}</div>
-          </article>
-        `;
-      })
-      .join("");
-  }
-
-  function renderPerformanceBars(data) {
-    const el = document.getElementById("performance-bars");
-    const items = data.leaderboard || [];
-    if (!items.length) {
-      el.innerHTML = '<div class="empty-state">No comparison data available.</div>';
-      return;
-    }
-
-    const maxPnlMagnitude = Math.max(
-      1,
-      ...items.map((item) => Math.abs(Number(item.cumulative_realized_pnl_r || 0)))
-    );
-
-    el.innerHTML = items
-      .map((item, index) => {
-        const color = getColor(index);
-        const pnl = Number(item.cumulative_realized_pnl_r || 0);
-        const width = `${Math.max(8, (Math.abs(pnl) / maxPnlMagnitude) * 100)}%`;
-        return `
-          <article class="bar-card">
-            <div class="bar-topline">
-              <strong>${escapeHtml(formatModelName(item.model_id, item.display_name))}</strong>
-              <span>${escapeHtml(formatR(pnl))}</span>
-            </div>
-            <div class="bar-track">
-              <div class="bar-fill" style="width: ${width}; background: linear-gradient(90deg, ${color}, ${color}88);"></div>
-            </div>
-            <div class="bar-grid">
-              <div class="bar-meta">Win Rate<strong>${escapeHtml(formatPercent(item.win_rate_percent))}</strong></div>
-              <div class="bar-meta">Agreement<strong>${escapeHtml(formatPercent(item.baseline_agreement_rate_percent))}</strong></div>
-              <div class="bar-meta">Invalid<strong>${escapeHtml(item.invalid_output_count || 0)}</strong></div>
-            </div>
-          </article>
-        `;
-      })
-      .join("");
-  }
-
-  function renderRecentDecisions(data) {
-    const el = document.getElementById("recent-decisions");
-    const items = data.recent_decisions || [];
-    if (!items.length) {
-      el.innerHTML = '<div class="empty-state">No recent decisions were found.</div>';
-      return;
-    }
-
-    el.innerHTML = items
-      .map((item) => {
-        const aligned = item.decision === item.primary_decision ? "Aligned" : "Diverged";
-        const alignedColor = item.decision === item.primary_decision ? "#80ffdb" : "#fba2b0";
-        return `
-          <article class="decision-card">
-            <div class="decision-topline">
-              <div class="decision-model">${escapeHtml(formatModelName(item.model_id, item.display_name))}</div>
-              <span class="decision-pill" style="${decisionClassName(item.decision)}">${escapeHtml(item.decision || "WAIT")}</span>
-            </div>
-            <div class="decision-summary">${escapeHtml(item.summary || "No summary available.")}</div>
-            <div class="decision-meta">
-              <div>Confidence<strong>${escapeHtml(item.confidence_score ?? "n/a")}</strong></div>
-              <div>Primary<strong style="color:${alignedColor};">${escapeHtml(item.primary_decision || "n/a")} · ${aligned}</strong></div>
-              <div>Recorded<strong>${escapeHtml(formatDateTime(item.recorded_at))}</strong></div>
-            </div>
-          </article>
+          </div>
         `;
       })
       .join("");
   }
 
   function renderEquityLegend(data) {
-    const el = document.getElementById("equity-legend");
+    const element = document.getElementById("equity-legend");
     const items = data.leaderboard || [];
-    el.innerHTML = items
+    element.innerHTML = items
       .map(
-        (item, index) => `
-          <span class="legend-pill">
-            <span class="legend-dot" style="background:${getColor(index)};"></span>
-            ${escapeHtml(formatModelName(item.model_id, item.display_name))}
-          </span>
-        `
+        (item, index) =>
+          `<span class="legend-chip"><span class="legend-dot" style="background:${color(index)}"></span>${esc(modelName(item.model_id, item.display_name))}</span>`
       )
       .join("");
   }
@@ -377,116 +541,315 @@
     const host = document.getElementById("equity-chart");
     const items = data.leaderboard || [];
     if (!items.length) {
-      host.innerHTML = '<div class="empty-state">No equity curve points were found in the current view model.</div>';
+      host.innerHTML = '<div class="empty-state">No equity data.</div>';
       return;
     }
 
     const allPoints = items.flatMap((item) => item.equity_curve || []);
     if (!allPoints.length) {
-      host.innerHTML = '<div class="empty-state">Equity curve points are missing for the current dataset.</div>';
+      host.innerHTML = '<div class="empty-state">No curve points.</div>';
       return;
     }
 
     const width = 880;
-    const height = 360;
-    const padding = { top: 24, right: 24, bottom: 40, left: 52 };
-    const minY = Math.min(0, ...allPoints.map((point) => Number(point.equity_r || 0)));
-    const maxY = Math.max(0, ...allPoints.map((point) => Number(point.equity_r || 0)));
+    const height = 320;
+    const padding = { top: 28, right: 24, bottom: 36, left: 52 };
+    const minY = Math.min(0, ...allPoints.map((point) => pickNumber(point.equity_r, 0)));
+    const maxY = Math.max(0, ...allPoints.map((point) => pickNumber(point.equity_r, 0)));
     const rangeY = Math.max(1, maxY - minY);
-    const xMaxCount = Math.max(...items.map((item) => (item.equity_curve || []).length), 1);
+    const xCount = Math.max(...items.map((item) => (item.equity_curve || []).length), 1);
 
     const mapX = (index, count) => {
       const span = width - padding.left - padding.right;
-      if (count <= 1) {
-        return padding.left + span / 2;
-      }
-      return padding.left + (span * index) / (count - 1);
+      return count <= 1 ? padding.left + span / 2 : padding.left + (span * index) / (count - 1);
     };
-
-    const mapY = (value) => {
-      const span = height - padding.top - padding.bottom;
-      return padding.top + ((maxY - value) / rangeY) * span;
-    };
+    const mapY = (value) => padding.top + ((maxY - value) / rangeY) * (height - padding.top - padding.bottom);
 
     const gridValues = [maxY, (maxY + minY) / 2, minY];
-    const gridLines = gridValues
+    const gridMarkup = gridValues
       .map((value) => {
         const y = mapY(value);
-        return `
-          <line class="axis-grid" x1="${padding.left}" y1="${y}" x2="${width - padding.right}" y2="${y}"></line>
-          <text class="axis-tick" x="${padding.left - 10}" y="${y + 4}" text-anchor="end">${escapeHtml(formatR(value))}</text>
-        `;
+        return `<line class="axis-grid" x1="${padding.left}" y1="${y}" x2="${width - padding.right}" y2="${y}"/>
+          <text class="axis-tick" x="${padding.left - 8}" y="${y + 4}" text-anchor="end">${esc(fmtR(value))}</text>`;
       })
       .join("");
 
-    const xTicks = Array.from({ length: xMaxCount }, (_, index) => {
-      const x = mapX(index, xMaxCount);
-      return `<text class="axis-tick" x="${x}" y="${height - 12}" text-anchor="middle">T${index + 1}</text>`;
+    const xTicks = Array.from({ length: xCount }, (_, index) => {
+      const x = mapX(index, xCount);
+      return `<text class="axis-tick" x="${x}" y="${height - 8}" text-anchor="middle">T${index + 1}</text>`;
     }).join("");
+
+    const zeroY = mapY(0);
+    const zeroLine = `<line x1="${padding.left}" y1="${zeroY}" x2="${width - padding.right}" y2="${zeroY}" stroke="rgba(255,255,255,0.15)" stroke-width="1" stroke-dasharray="4,4"/>`;
 
     const series = items
       .map((item, index) => {
         const points = item.equity_curve || [];
-        const color = getColor(index);
+        const stroke = color(index);
         const polyline = points
-          .map((point, pointIndex) => `${mapX(pointIndex, points.length)},${mapY(Number(point.equity_r || 0))}`)
+          .map((point, pointIndex) => `${mapX(pointIndex, points.length)},${mapY(pickNumber(point.equity_r, 0))}`)
           .join(" ");
+        const areaStart = `${mapX(0, points.length)},${zeroY}`;
+        const areaEnd = `${mapX(points.length - 1, points.length)},${zeroY}`;
+        const area = `<polygon fill="${stroke}" opacity="0.06" points="${areaStart} ${polyline} ${areaEnd}"/>`;
         const markers = points
           .map((point, pointIndex) => {
             const x = mapX(pointIndex, points.length);
-            const y = mapY(Number(point.equity_r || 0));
-            return `<circle cx="${x}" cy="${y}" r="4" fill="${color}" stroke="#f6fbff" stroke-width="1"></circle>`;
+            const y = mapY(pickNumber(point.equity_r, 0));
+            return `<circle cx="${x}" cy="${y}" r="4" fill="${stroke}" stroke="var(--bg)" stroke-width="2"/>`;
           })
           .join("");
-        return `
-          <g style="color:${color};">
-            <polyline class="line-shadow" fill="none" stroke="${color}" stroke-width="3.5" points="${polyline}"></polyline>
-            ${markers}
-          </g>
-        `;
+        return `<g style="color:${stroke}">${area}<polyline class="line-glow" fill="none" stroke="${stroke}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" points="${polyline}"/>${markers}</g>`;
       })
       .join("");
 
-    host.innerHTML = `
-      <svg class="chart-shell" viewBox="0 0 ${width} ${height}" role="img" aria-label="Tournament equity curves">
-        ${gridLines}
-        <line class="axis-grid" x1="${padding.left}" y1="${height - padding.bottom}" x2="${width - padding.right}" y2="${height - padding.bottom}"></line>
-        ${xTicks}
-        <text class="axis-label" x="${padding.left}" y="16">Realized PnL (R)</text>
-        ${series}
-      </svg>
+    host.innerHTML = `<svg class="chart-shell" viewBox="0 0 ${width} ${height}" role="img" aria-label="Equity curves">${gridMarkup}${zeroLine}${xTicks}<text class="axis-label" x="${padding.left}" y="16">Realized PnL (R)</text>${series}</svg>`;
+  }
+
+  function renderCostBreakdown(data) {
+    const element = document.getElementById("cost-breakdown");
+    const items = data.leaderboard || [];
+    if (!items.length) {
+      element.innerHTML = '<div class="empty-state">No cost data.</div>';
+      return;
+    }
+
+    element.innerHTML = items
+      .map((item, index) => {
+        const components = costComponents(item);
+        const maxBar = Math.max(1, ...components.map((component) => component.value));
+        const netValue = netPnlEur(item);
+        const currentEquity = pickNumber(item.current_equity_eur);
+        const secondarySummaryLabel = netValue !== null ? "Net PnL" : "Current Equity";
+        const secondarySummaryValue = netValue !== null ? fmtMoney(netValue) : fmtMoney(currentEquity);
+
+        return `
+          <div class="cost-row">
+            <div>
+              <div class="cost-model" style="color:${color(index)}">${esc(modelName(item.model_id, item.display_name))}</div>
+              ${
+                components.length
+                  ? `<div class="cost-bars">
+                    ${components
+                      .map(
+                        (component) => `
+                          <div class="cost-bar-row">
+                            <span class="cost-bar-label">${esc(component.label)}</span>
+                            <div class="cost-bar-track"><div class="cost-bar-fill" style="width:${((component.value / maxBar) * 100).toFixed(1)}%"></div></div>
+                            <span class="cost-bar-value">${esc(fmtMoney(component.value))}</span>
+                          </div>
+                        `
+                      )
+                      .join("")}
+                  </div>`
+                  : '<div class="cost-bar-empty">Detailed cost components are not present in the current view model.</div>'
+              }
+            </div>
+            <div class="cost-summary">
+              <div class="cost-summary-item"><div class="cost-summary-label">Gross PnL</div><div class="cost-summary-value ${pnlClass(grossPnlEur(item))}">${esc(fmtMoney(grossPnlEur(item)))}</div></div>
+              <div class="cost-summary-item"><div class="cost-summary-label">${esc(secondarySummaryLabel)}</div><div class="cost-summary-value ${pnlClass(netValue !== null ? netValue : currentEquity)}">${esc(secondarySummaryValue)}</div></div>
+              <div class="cost-summary-item"><div class="cost-summary-label">Cost / Trade</div><div class="cost-summary-value">${esc(fmtMoney(costPerTrade(item)))}</div></div>
+              <div class="cost-summary-item"><div class="cost-summary-label">Cost % Gross</div><div class="cost-summary-value cost-warn">${esc(fmtPct(costsAsPctOfGross(item)))}</div></div>
+            </div>
+          </div>
+        `;
+      })
+      .join("");
+  }
+
+  function renderDiscipline(data) {
+    const element = document.getElementById("discipline-grid");
+    const items = data.leaderboard || [];
+    if (!items.length) {
+      element.innerHTML = '<div class="empty-state">No discipline data.</div>';
+      return;
+    }
+
+    const hasDecisionCounts = items.some(
+      (item) =>
+        item.buy_count !== undefined ||
+        item.sell_count !== undefined ||
+        item.wait_count !== undefined ||
+        item.nogo_count !== undefined
+    );
+
+    const columns = hasDecisionCounts
+      ? [
+          { label: "BUY", getValue: (item) => fmtCount(item.buy_count) },
+          { label: "SELL", getValue: (item) => fmtCount(item.sell_count) },
+          { label: "WAIT", getValue: (item) => fmtCount(item.wait_count) },
+          { label: "NO-GO", getValue: (item) => fmtCount(item.nogo_count) },
+          { label: "Invalid", getValue: (item) => fmtCount(item.invalid_output_count), danger: (item) => pickNumber(item.invalid_output_count, 0) > 3 },
+          { label: "Agree %", getValue: (item) => fmtPct(item.baseline_agreement_rate_percent) },
+          { label: "Avg Conf", getValue: (item) => fmtCount(item.average_confidence_score) },
+        ]
+      : [
+          { label: "Evals", getValue: (item) => fmtCount(evaluations(item)) },
+          { label: "Action", getValue: (item) => fmtCount(totalTrades(item)) },
+          { label: "Closed", getValue: (item) => fmtCount(item.closed_total) },
+          { label: "Wins", getValue: (item) => fmtCount(item.wins_total) },
+          { label: "Losses", getValue: (item) => fmtCount(item.losses_total) },
+          { label: "Invalid", getValue: (item) => fmtCount(item.invalid_output_count), danger: (item) => pickNumber(item.invalid_output_count, 0) > 3 },
+          { label: "Agree %", getValue: (item) => fmtPct(item.baseline_agreement_rate_percent) },
+          { label: "Avg Conf", getValue: (item) => fmtCount(item.average_confidence_score) },
+        ];
+
+    const header = `
+      <div class="disc-row disc-header">
+        <div class="disc-model"></div>
+        ${columns.map((column) => `<div class="disc-cell"><div class="disc-cell-label">${esc(column.label)}</div></div>`).join("")}
+      </div>
     `;
+
+    const rows = items
+      .map(
+        (item, index) => `
+          <div class="disc-row">
+            <div class="disc-model" style="color:${color(index)}">${esc(modelName(item.model_id, item.display_name))}</div>
+            ${columns
+              .map((column) => {
+                const danger = column.danger && column.danger(item);
+                return `<div class="disc-cell"><div class="disc-cell-value ${danger ? "danger" : ""}">${esc(column.getValue(item))}</div></div>`;
+              })
+              .join("")}
+          </div>
+        `
+      )
+      .join("");
+
+    element.innerHTML = header + rows;
+  }
+
+  function renderPerfBars(data) {
+    const element = document.getElementById("performance-bars");
+    const items = data.leaderboard || [];
+    if (!items.length) {
+      element.innerHTML = '<div class="empty-state">No performance data.</div>';
+      return;
+    }
+
+    const maxMagnitude = Math.max(1, ...items.map((item) => Math.abs(pickNumber(netPnlR(item), 0))));
+
+    element.innerHTML = items
+      .map((item, index) => {
+        const pnl = pickNumber(netPnlR(item), 0);
+        const width = Math.max(8, (Math.abs(pnl) / maxMagnitude) * 100);
+        return `
+          <div class="perf-row">
+            <div class="perf-topline">
+              <span class="perf-name" style="color:${color(index)}">${esc(modelName(item.model_id, item.display_name))}</span>
+              <span class="perf-pnl ${pnlClass(pnl)}">${esc(fmtR(pnl))} net</span>
+            </div>
+            <div class="perf-track"><div class="perf-fill" style="width:${width}%;background:linear-gradient(90deg,${color(index)},${color(index)}66)"></div></div>
+            <div class="perf-meta">
+              <div class="perf-meta-item"><span class="perf-meta-label">Win Rate</span><span class="perf-meta-value">${esc(fmtPct(item.win_rate_percent))}</span></div>
+              <div class="perf-meta-item"><span class="perf-meta-label">Drawdown</span><span class="perf-meta-value danger">${esc(fmtR(maxDrawdownR(item)))}</span></div>
+              <div class="perf-meta-item"><span class="perf-meta-label">Costs</span><span class="perf-meta-value cost-warn">${esc(fmtMoney(totalCosts(item)))}</span></div>
+              <div class="perf-meta-item"><span class="perf-meta-label">Trades</span><span class="perf-meta-value">${esc(fmtCount(totalTrades(item)))}</span></div>
+              <div class="perf-meta-item"><span class="perf-meta-label">Open</span><span class="perf-meta-value">${esc(fmtCount(openTrades(item)))}</span></div>
+            </div>
+          </div>
+        `;
+      })
+      .join("");
+  }
+
+  function renderPairs(data) {
+    const element = document.getElementById("pair-performance");
+    const items = data.pair_performance || [];
+    if (!items.length) {
+      element.innerHTML = '<div class="empty-state">No pair data yet. Pair breakdown will appear after the view model exposes market-level detail.</div>';
+      return;
+    }
+
+    element.innerHTML = items
+      .map((item) => {
+        const winRate = item.trades > 0 ? ((item.wins / item.trades) * 100).toFixed(0) : "0";
+        return `
+          <div class="pair-card">
+            <div class="pair-name">${esc(item.pair)}</div>
+            <div class="pair-stats">
+              <div><div class="pair-stat-label">Net PnL</div><div class="pair-stat-value ${pnlClass(item.net_pnl_r)}">${esc(fmtR(item.net_pnl_r))}</div></div>
+              <div><div class="pair-stat-label">Win Rate</div><div class="pair-stat-value">${esc(`${winRate}%`)}</div></div>
+              <div><div class="pair-stat-label">Trades</div><div class="pair-stat-value">${esc(fmtCount(item.trades))}</div></div>
+              <div><div class="pair-stat-label">Best Model</div><div class="pair-stat-value pair-best">${esc(item.best_model)}</div></div>
+            </div>
+          </div>
+        `;
+      })
+      .join("");
+  }
+
+  function renderDecisions(data) {
+    const element = document.getElementById("recent-decisions");
+    const items = data.recent_decisions || [];
+    if (!items.length) {
+      element.innerHTML = '<div class="empty-state">No recent decisions.</div>';
+      return;
+    }
+
+    element.innerHTML = items
+      .map((item) => {
+        const aligned = item.primary_decision ? item.decision === item.primary_decision : null;
+        const pillStyle =
+          item.decision === "BUY"
+            ? "background:rgba(0,255,170,0.12);color:var(--green);border:1px solid rgba(0,255,170,0.2)"
+            : item.decision === "SELL"
+              ? "background:rgba(255,77,106,0.12);color:var(--red);border:1px solid rgba(255,77,106,0.2)"
+              : "background:rgba(77,159,255,0.12);color:var(--blue);border:1px solid rgba(77,159,255,0.2)";
+        const reasons = (item.reason_codes || []).map((reason) => `<span class="reason-tag">${esc(reason)}</span>`).join("");
+
+        return `
+          <div class="dec-card">
+            <div class="dec-top">
+              <span class="dec-model">${esc(modelName(item.model_id, item.display_name))}</span>
+              <span class="dec-pill" style="${pillStyle}">${esc(item.decision || "WAIT")}</span>
+            </div>
+            <div class="dec-summary">${esc(item.summary || "No summary.")}</div>
+            <div class="dec-meta">
+              <div class="dec-meta-item"><span class="dec-meta-label">Confidence</span><span class="dec-meta-value">${esc(fmtCount(item.confidence_score))}</span></div>
+              <div class="dec-meta-item"><span class="dec-meta-label">Baseline</span><span class="dec-meta-value ${aligned === false ? "danger" : aligned === true ? "good" : ""}">${esc(aligned === null ? "n/a" : aligned ? "Aligned" : "Diverged")}</span></div>
+              <div class="dec-meta-item"><span class="dec-meta-label">Time</span><span class="dec-meta-value">${esc(fmtDate(item.recorded_at))}</span></div>
+            </div>
+            ${reasons ? `<div class="dec-reasons">${reasons}</div>` : ""}
+          </div>
+        `;
+      })
+      .join("");
   }
 
   async function loadViewModel() {
     const params = new URLSearchParams(window.location.search);
-    const requestedPath = params.get("data") || "./openclaw_tournament_dashboard_view_model.json";
+    const path = params.get("data") || "./openclaw_tournament_dashboard_view_model.json";
     try {
-      const response = await fetch(requestedPath, { cache: "no-store" });
+      const response = await fetch(path, { cache: "no-store" });
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
       }
-      const payload = await response.json();
       return {
-        data: payload,
-        sourceLabel: `Live view model · ${requestedPath}`,
+        data: await response.json(),
+        label: `Live data | ${path}`,
       };
     } catch (error) {
       return {
         data: fallbackViewModel,
-        sourceLabel: `Fallback demo dataset · ${requestedPath} unavailable`,
+        label: `Demo data | ${path} unavailable`,
       };
     }
   }
 
   async function main() {
-    const { data, sourceLabel } = await loadViewModel();
-    setOverview(data, sourceLabel);
+    const { data, label } = await loadViewModel();
+    renderStatus(data, label);
+    renderTicker(data);
+    renderLeaderboard(data);
     renderEquityLegend(data);
     renderEquityChart(data);
-    renderLeaderboard(data);
-    renderPerformanceBars(data);
-    renderRecentDecisions(data);
+    renderCostBreakdown(data);
+    renderDiscipline(data);
+    renderPerfBars(data);
+    renderPairs(data);
+    renderDecisions(data);
   }
 
   main();

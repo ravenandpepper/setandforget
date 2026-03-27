@@ -4,9 +4,15 @@ from typing import Protocol, TypedDict
 class PepperstoneConfig(TypedDict):
     environment: str | None
     account_id: str | None
-    api_key: str | None
-    api_secret: str | None
+    client_id: str | None
+    client_secret: str | None
+    redirect_uri: str | None
+    auth_base_url: str | None
     api_base_url: str | None
+    access_token: str | None
+    refresh_token: str | None
+    token_type: str | None
+    access_token_expires_at: str | None
     configured: bool
 
 

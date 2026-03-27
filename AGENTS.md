@@ -3,6 +3,10 @@
 ## Project purpose
 This project builds a Set & Forget trading engine for paper trading and later structured automation.
 
+## Operating context
+1. Read `RUN_STATE.md` first for the current operational state, tournament meaning, start conditions, and notification expectations.
+2. Use `AGENTS.md` for stable project rules and `RUN_STATE.md` for current state.
+
 ## Core architecture
 1. Primary strategy: Set & Forget Swing Strategy
 2. Secondary advisory layer: fxalex

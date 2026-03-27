@@ -37,6 +37,7 @@ def build_execution_scaffold(snapshot: dict, payload: dict):
         "dry_run": True,
         "paper_only": True,
         "source_of_truth": "set_and_forget",
+        "execution_platform": "ctrader",
         "decision_received": payload["decision"],
         "runtime_config": runtime_config,
     }
@@ -139,6 +140,7 @@ def build_tradingview_contract(snapshot: dict, payload: dict, order_intent: dict
         "delivery": "disabled",
         "webhook_ready": True,
         "event": "trade_setup_prepared",
+        "execution_platform": "tradingview",
         "decision": order_intent["decision"],
         "pair": order_intent["instrument"],
         "timeframe": order_intent["timeframe"],
@@ -173,6 +175,7 @@ def build_pepperstone_order_plan(snapshot: dict, payload: dict, order_intent: di
         "adapter": "pepperstone_order_plan_stub",
         "delivery": "disabled",
         "runtime_dependency": "pepperstone_adapter",
+        "execution_platform": "ctrader",
         "intent": "plan_only",
         "side": order_intent["side"],
         "instrument": order_intent["instrument"],
@@ -192,6 +195,7 @@ def build_pepperstone_order_plan(snapshot: dict, payload: dict, order_intent: di
 def build_pepperstone_broker_payload(request_blueprint: dict):
     return {
         "account_id": request_blueprint["account_id"],
+        "platform": "ctrader",
         "instrument": request_blueprint["instrument"],
         "side": request_blueprint["side"],
         "order_type": request_blueprint["order_type"],

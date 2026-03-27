@@ -56,8 +56,8 @@ def assert_common_execution_guards(execution_state: dict):
     assert pepperstone_config["adapter_key"] == "pepperstone", (
         "Execution scaffold must expose the Pepperstone adapter config"
     )
-    assert pepperstone_config["env_namespace"] == "PEPPERSTONE_*", (
-        "Pepperstone config must expose the expected env namespace"
+    assert pepperstone_config["env_namespace"] == "CTRADER_*", (
+        "Pepperstone config must expose the expected cTrader env namespace"
     )
     assert pepperstone_config["required_env_vars"] == future_execution.PEPPERSTONE_REQUIRED_ENV_VARS, (
         "Pepperstone config must expose the required env vars"
@@ -80,11 +80,13 @@ def assert_pepperstone_env_contract():
         with patch.dict(
             os.environ,
             {
-                "PEPPERSTONE_ENVIRONMENT": "paper",
-                "PEPPERSTONE_ACCOUNT_ID": "demo-account",
-                "PEPPERSTONE_API_KEY": "demo-key",
-                "PEPPERSTONE_API_SECRET": "demo-secret",
-                "PEPPERSTONE_API_BASE_URL": "https://example.invalid",
+                "CTRADER_ENVIRONMENT": "demo",
+                "CTRADER_ACCOUNT_ID": "4219358",
+                "CTRADER_CLIENT_ID": "demo-client-id",
+                "CTRADER_CLIENT_SECRET": "demo-client-secret",
+                "CTRADER_REDIRECT_URI": "http://127.0.0.1:8788/callback",
+                "CTRADER_AUTH_BASE_URL": "https://openapi.ctrader.com",
+                "CTRADER_API_BASE_URL": "https://demo.ctraderapi.com",
             },
             clear=True,
         ):
@@ -96,8 +98,11 @@ def assert_pepperstone_env_contract():
             assert config["missing_required_env_vars"] == [], (
                 "No required Pepperstone vars should remain missing when configured"
             )
-            assert config["present_optional_env_vars"] == pepperstone_config.PEPPERSTONE_OPTIONAL_ENV_VARS, (
-                "Optional Pepperstone vars should be reported when set"
+            assert config["present_optional_env_vars"] == [
+                "CTRADER_AUTH_BASE_URL",
+                "CTRADER_API_BASE_URL",
+            ], (
+                "Optional cTrader base urls should be reported when set"
             )
 
 
@@ -125,8 +130,8 @@ def assert_pepperstone_client_scaffold_contract():
             assert missing_env_scaffold["request_blueprint"]["account_id"] == "from_env", (
                 "Client scaffold must keep the account id as an env-backed placeholder"
             )
-            assert missing_env_scaffold["transport"] == "null_pepperstone_transport", (
-                "Client scaffold must expose the null transport name"
+            assert missing_env_scaffold["transport"] == "null_ctrader_transport", (
+                "Client scaffold must expose the null cTrader transport name"
             )
             assert missing_env_scaffold["request_blueprint"]["order_type"] == "market", (
                 "Client scaffold must expose the normalized default order type"
@@ -136,10 +141,11 @@ def assert_pepperstone_client_scaffold_contract():
         with patch.dict(
             os.environ,
             {
-                "PEPPERSTONE_ENVIRONMENT": "paper",
-                "PEPPERSTONE_ACCOUNT_ID": "demo-account",
-                "PEPPERSTONE_API_KEY": "demo-key",
-                "PEPPERSTONE_API_SECRET": "demo-secret",
+                "CTRADER_ENVIRONMENT": "demo",
+                "CTRADER_ACCOUNT_ID": "4219358",
+                "CTRADER_CLIENT_ID": "demo-client-id",
+                "CTRADER_CLIENT_SECRET": "demo-client-secret",
+                "CTRADER_REDIRECT_URI": "http://127.0.0.1:8788/callback",
             },
             clear=True,
         ):
@@ -149,6 +155,9 @@ def assert_pepperstone_client_scaffold_contract():
             )
             assert configured_scaffold["configured"] is True, (
                 "Client scaffold must reflect that Pepperstone env is configured"
+            )
+            assert configured_scaffold["execution_platform"] == "ctrader", (
+                "Client scaffold must expose cTrader as the execution platform"
             )
             assert configured_scaffold["prepared_request_ready"] is True, (
                 "Client scaffold must mark the prepared request as ready when config is complete"
@@ -174,10 +183,11 @@ def assert_pepperstone_client_contract():
         with patch.dict(
             os.environ,
             {
-                "PEPPERSTONE_ENVIRONMENT": "paper",
-                "PEPPERSTONE_ACCOUNT_ID": "demo-account",
-                "PEPPERSTONE_API_KEY": "demo-key",
-                "PEPPERSTONE_API_SECRET": "demo-secret",
+                "CTRADER_ENVIRONMENT": "demo",
+                "CTRADER_ACCOUNT_ID": "4219358",
+                "CTRADER_CLIENT_ID": "demo-client-id",
+                "CTRADER_CLIENT_SECRET": "demo-client-secret",
+                "CTRADER_REDIRECT_URI": "http://127.0.0.1:8788/callback",
             },
             clear=True,
         ):
@@ -185,7 +195,7 @@ def assert_pepperstone_client_contract():
             request = client.prepare_order(order_intent)
             response = client.submit_prepared_order(request)
 
-    assert request["account_id"] == "demo-account", (
+    assert request["account_id"] == "4219358", (
         "Pepperstone client must map the env-backed account id into the request"
     )
     assert request["instrument"] == "EURUSD", (
@@ -263,18 +273,19 @@ def assert_pepperstone_adapter_contract():
             assert missing_env["missing_required_env_vars"] == pepperstone_config.PEPPERSTONE_REQUIRED_ENV_VARS, (
                 "Pepperstone adapter must expose missing env vars in a stable field"
             )
-            assert missing_env["transport"] == "null_pepperstone_transport", (
-                "Pepperstone adapter must expose the null transport consistently"
+            assert missing_env["transport"] == "null_ctrader_transport", (
+                "Pepperstone adapter must expose the null cTrader transport consistently"
             )
 
     with patch.object(pepperstone_config.runtime_env, "env_file_candidates", return_value=[]):
         with patch.dict(
             os.environ,
             {
-                "PEPPERSTONE_ENVIRONMENT": "paper",
-                "PEPPERSTONE_ACCOUNT_ID": "demo-account",
-                "PEPPERSTONE_API_KEY": "demo-key",
-                "PEPPERSTONE_API_SECRET": "demo-secret",
+                "CTRADER_ENVIRONMENT": "demo",
+                "CTRADER_ACCOUNT_ID": "4219358",
+                "CTRADER_CLIENT_ID": "demo-client-id",
+                "CTRADER_CLIENT_SECRET": "demo-client-secret",
+                "CTRADER_REDIRECT_URI": "http://127.0.0.1:8788/callback",
             },
             clear=True,
         ):
@@ -396,11 +407,11 @@ def assert_null_transport_contract():
             "client_order_id": None,
         }
     )
-    assert transport.name == "null_pepperstone_transport", (
-        "Null transport must expose a stable transport name"
+    assert transport.name == "null_ctrader_transport", (
+        "Null transport must expose a stable cTrader transport name"
     )
-    assert response["provider"] == "pepperstone", (
-        "Null transport response must identify the provider"
+    assert response["provider"] == "ctrader", (
+        "Null transport response must identify cTrader as the provider"
     )
 
 
@@ -416,6 +427,9 @@ def run_prepared_case(case: dict, skill: dict, schema: dict):
         f"{case['id']}: expected future_execution status {expected['status']}, got {execution_state['status']}"
     )
     assert_common_execution_guards(execution_state)
+    assert execution_state["execution_platform"] == "ctrader", (
+        f"{case['id']}: execution scaffold must expose cTrader as the execution platform"
+    )
     assert (execution_state["order_intent"] is not None) == expected["order_intent_present"], (
         f"{case['id']}: unexpected order_intent presence"
     )
@@ -460,14 +474,17 @@ def run_prepared_case(case: dict, skill: dict, schema: dict):
     assert client_scaffold["client"] == "pepperstone_client_v1", (
         f"{case['id']}: Pepperstone client id mismatch"
     )
-    assert client_scaffold["transport"] == "null_pepperstone_transport", (
-        f"{case['id']}: Pepperstone scaffold must use the null transport"
+    assert client_scaffold["transport"] == "null_ctrader_transport", (
+        f"{case['id']}: Pepperstone scaffold must use the null cTrader transport"
     )
     assert client_scaffold["paper_only"] is True, (
         f"{case['id']}: Pepperstone client scaffold must stay paper-only"
     )
     assert client_scaffold["live_execution"] is False, (
         f"{case['id']}: Pepperstone client scaffold must keep live execution disabled"
+    )
+    assert client_scaffold["execution_platform"] == "ctrader", (
+        f"{case['id']}: Pepperstone client scaffold must expose cTrader as the execution platform"
     )
     assert client_scaffold["request_blueprint"]["instrument"] == payload["pair"], (
         f"{case['id']}: Pepperstone request blueprint instrument mismatch"
@@ -506,6 +523,9 @@ def run_prepared_case(case: dict, skill: dict, schema: dict):
         f"{case['id']}: Pepperstone adapter must not mark requests ready while policy blocks execution"
     )
     broker_payload = execution_state["pepperstone_order_plan"]["broker_payload"]
+    assert broker_payload["platform"] == "ctrader", (
+        f"{case['id']}: Pepperstone broker payload must mark cTrader as the execution platform"
+    )
     assert broker_payload["account_id"] == client_scaffold["request_blueprint"]["account_id"], (
         f"{case['id']}: Pepperstone broker payload must reuse the normalized account reference"
     )
