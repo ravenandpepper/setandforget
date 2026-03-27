@@ -1,11 +1,41 @@
 {
   "status_version": "1.0",
-  "updated_at": "2026-03-27T11:38:12.774065+00:00",
-  "market_watch": null,
+  "updated_at": "2026-03-27T15:00:41.842249+00:00",
+  "market_watch": {
+    "run_state": "skipped",
+    "currently_running": false,
+    "status": "skipped_by_guard",
+    "updated_at": "2026-03-27T15:00:41.842007+00:00",
+    "trigger_time": "2026-03-27T15:00:00Z",
+    "execution_timeframe": "4H",
+    "execution_mode": "paper",
+    "total_runs": 0,
+    "ok_runs": 0,
+    "error_runs": 0,
+    "skipped_runs": 2,
+    "exit_code": 0,
+    "guard": {
+      "guard_version": "1.0",
+      "evaluated_at": "2026-03-27T15:00:41.840436+00:00",
+      "eligible": false,
+      "market_status": "open_off_cycle",
+      "skip_reason_code": "H4_NOT_CLOSED",
+      "summary": "De markt is open, maar dit is geen H4 close-moment in UTC.",
+      "trigger_time": "2026-03-27T15:00:00Z",
+      "execution_timeframe": "4H",
+      "pairs": [
+        "EURJPY",
+        "EURGBP"
+      ]
+    },
+    "latest_run": null,
+    "latest_success": null,
+    "latest_error": null
+  },
   "tournament": {
     "run_state": "idle",
     "currently_running": false,
-    "updated_at": "2026-03-27T11:38:12.774003+00:00",
+    "updated_at": "2026-03-27T14:00:42.235821+00:00",
     "started_at": null,
     "completed_at": null,
     "last_result_status": null,
